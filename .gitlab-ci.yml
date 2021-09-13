@@ -1,0 +1,20 @@
+build:
+    image: ipadsse302/tigerlabs_score_env
+    tags:
+    - val runner docker executor
+    stage: build
+    script:
+    - make build
+    artifacts:
+      paths:
+        - build
+
+test:
+    image: ipadsse302/tigerlabs_score_env
+    tags:
+    - val runner docker executor
+    stage: test
+    script:
+    - cp /home/stu/upload.py .
+    - make gradelab1 | tee output.log
+    - python3 upload.py

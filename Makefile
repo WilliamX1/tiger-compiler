@@ -12,7 +12,7 @@ docker-run-backend:
 		-v $(shell pwd):/home/stu/tiger-compiler ipadsse302/tigerlabs_env:latest
 
 transform:
-	find . \( -name "*.cc" -o -name "*.tig" -o -name "*.h" -o -name "*.sh" -o -name "*.txt" \) | xargs -i dos2unix -n {} tmp && mv -f tmp {}
+	find . \( -name "*.cc" -o -name "*.tig" -o -name "*.h" -o -name "*.sh" -o -name "*.txt" \) | xargs -I % sh -c 'dos2unix -n % tmp; mv -f tmp %;'
 
 build:transform
 	mkdir -p build && cd build && cmake -DCMAKE_BUILD_TYPE=Release .. && make

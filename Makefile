@@ -1,4 +1,4 @@
-.PHONY: docker-build docker-run docker-run-backend transform build gradelab1 gradelab2 gradelab3 gradelab4 gradelab5 gradelab6 gradeall handin clean register
+.PHONY: docker-build docker-run docker-run-backend transform build gradelab1 gradelab2 gradelab3 gradelab4 gradelab5 gradelab6 gradeall handin clean register format
 
 docker-build:
 	docker build -t ipadsse302/tigerlabs_env .
@@ -54,3 +54,5 @@ clean:
 register:
 	python3 scripts/register.py
 
+format:
+	find . \( -name "*.h" -o -iname "*.cc" \) | xargs clang-format -i -style=file

@@ -143,7 +143,7 @@ We provide an LLVM-style .clang-format file in the project directory. You can us
 
 Use `clang-format` command
 ```
-find . \( -name "*.h" -o -iname "*.cc" \) | xargs clang-format -i -style=file
+find . \( -name "*.h" -o -iname "*.cc" \) | xargs clang-format -i -style=file  # or make format
 ```
 
 or config the clang-format file in your IDE and use the built-in format feature in it.
@@ -151,3 +151,7 @@ or config the clang-format file in your IDE and use the built-in format feature 
 ## Other Commands
 
 Utility commands can be found in the `Makefile`. They can be directly run by `make xxx` in a Unix shell. Windows users cannot use the `make` command, but the contents of `Makefile` can still be used as a reference for the available commands.
+
+## Contributing to Tiger Compiler
+
+You can post questions, issues, feedback, or even MR proposals through (our main GitLab repository)[https://ipads.se.sjtu.edu.cn:2020/compilers-2021/compilers-2021/issues]. We are rapidly refactoring the original C tiger compiler implementation into modern C++ style, so any suggestion to make this lab better is welcomed.

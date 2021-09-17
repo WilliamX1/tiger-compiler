@@ -5,7 +5,7 @@
 namespace A {
 int A::CompoundStm::MaxArgs() const {
   // TODO: put your code here (lab1).
-  return stm1->MaxArgs() + stm2->MaxArgs();
+  return stm1->MaxArgs() > stm2->MaxArgs() ? stm1->MaxArgs() : stm2->MaxArgs();
 }
 
 Table *A::CompoundStm::Interp(Table *t) const {
@@ -15,13 +15,15 @@ Table *A::CompoundStm::Interp(Table *t) const {
 
 int A::AssignStm::MaxArgs() const {
   // TODO: put your code here (lab1).
-  return 1 + exp->MaxArgs();
+  return exp->MaxArgs();
 }
 
 Table *A::AssignStm::Interp(Table *t) const {
   // TODO: put your code here (lab1).
   IntAndTable* int_and_table = exp->InterpExp(t);
-  return int_and_table->t;
+  Table* table = int_and_table->t;
+  table = table->Update(id, int_and_table->i);
+  return table;
 }
 
 int A::PrintStm::MaxArgs() const {
@@ -76,7 +78,7 @@ IntAndTable* OpExp::InterpExp(Table* t) const {
 }
 
 int EseqExp::MaxArgs() const {
-  return stm->MaxArgs() + exp->MaxArgs();
+  return stm->MaxArgs() > exp->MaxArgs() ? stm->MaxArgs() : exp->MaxArgs();
 }
 
 IntAndTable* EseqExp::InterpExp(Table* t) const {
@@ -92,7 +94,9 @@ int PairExpList::NumExps() const {
 }
 
 IntAndTable* PairExpList::Interp(Table* t) const {
-  return tail->Interp(exp->InterpExp(t)->t);
+  IntAndTable* int_and_table = exp->InterpExp(t);
+  printf("%d ", int_and_table->i);
+  return tail->Interp(int_and_table->t);
 }
 
 int LastExpList::MaxArgs() const {
@@ -104,7 +108,9 @@ int LastExpList::NumExps() const {
 }
 
 IntAndTable* LastExpList::Interp(Table* t) const {
-  return exp->InterpExp(t);
+  IntAndTable* int_and_table = exp->InterpExp(t);
+  printf("%d\n", int_and_table->i);
+  return int_and_table;
 }
 
 int Table::Lookup(const std::string &key) const {

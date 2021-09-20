@@ -89,7 +89,7 @@ int PairExpList::MaxArgs() const {
   return exp->MaxArgs() + tail->MaxArgs();
 }
 
-int PairExpList::NumExps() const {
+int PairExpList::NumExps() const { 
   return 1 + tail->NumExps();
 }
 

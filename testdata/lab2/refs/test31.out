@@ -1,0 +1,10 @@
+       LET   53
+       VAR   59
+        ID   63 a
+     COLON   64
+        ID   65 int
+    ASSIGN   69
+    STRING   72  
+        IN   76
+        ID   80 a
+       END   82

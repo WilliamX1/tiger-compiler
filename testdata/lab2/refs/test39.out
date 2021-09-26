@@ -1,0 +1,26 @@
+       LET  161
+  FUNCTION  166
+        ID  175 g
+    LPAREN  176
+        ID  177 a
+     COLON  178
+        ID  179 int
+    RPAREN  182
+     COLON  183
+        ID  184 int
+        EQ  188
+        ID  190 a
+  FUNCTION  193
+        ID  202 g
+    LPAREN  203
+        ID  204 a
+     COLON  205
+        ID  206 int
+    RPAREN  209
+     COLON  210
+        ID  211 int
+        EQ  215
+        ID  217 a
+        IN  219
+       INT  223 0
+       END  225

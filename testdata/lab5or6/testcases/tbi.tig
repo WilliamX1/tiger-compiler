@@ -1,0 +1,12 @@
+let 
+	var N := 8
+
+	function printb() = 
+	(for i := 0 to N - 1
+		do (for j := 0 to N - 1
+			do print(if i > j then "x" else "y");
+			print("\n"));
+	print("\n"))
+in
+	printb()
+end

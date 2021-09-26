@@ -1,0 +1,7 @@
+let
+
+	type t = {a:int, b:int}
+	var x := t{a = 3, b = 4}
+in
+	printi(x.a);printi(x.b)
+end

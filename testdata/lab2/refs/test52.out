@@ -1,0 +1,39 @@
+       LET    1
+       VAR    6
+        ID   10 a
+    ASSIGN   12
+    STRING   15 compilers
+
+       VAR   30
+        ID   34 b
+    ASSIGN   36
+    STRING   39 compilers
+
+       VAR   81
+        ID   85 c
+    ASSIGN   87
+    STRING   90 c	o	m	p	i	l	e	r	s	
+
+       VAR  123
+        ID  127 d
+    ASSIGN  129
+    STRING  132 "compilers"
+
+       VAR  151
+        ID  155 e
+    ASSIGN  157
+    STRING  160 \compilers\
+
+       VAR  179
+        ID  183 f
+    ASSIGN  185
+    STRING  188 commmmmmmmmmmmmlerssssssssssss
+
+       VAR  237
+        ID  241 g
+    ASSIGN  243
+    STRING  246 	
+
+        IN  278
+       INT  282 0
+       END  284

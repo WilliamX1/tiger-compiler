@@ -1,0 +1,11 @@
+ forExp(i,
+  intExp(10),
+  stringExp( ),
+  assignExp(
+   simpleVar(i),
+   opExp(
+    MINUS,
+    varExp(
+     simpleVar(i)),
+    intExp(1))),
+  TRUE)

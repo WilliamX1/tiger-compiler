@@ -1,0 +1,8 @@
+let
+	var a := 4
+in
+	for i := 0 to a
+	do (printi(i);
+		if i = 3 
+		then break)
+end

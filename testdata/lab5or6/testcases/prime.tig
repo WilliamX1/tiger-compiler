@@ -1,0 +1,42 @@
+/* Prime Check */
+
+let
+    function check(num:int) : int=
+    	let 
+		var flag := 1
+	in
+		(for i :=2 to num/2
+		do 
+			if num/i*i=num
+			then (flag:=0; break);
+		flag)
+	end
+    
+    function try() = 
+    (
+	printi(check(56)); /*expect: 0*/
+	print("\n");
+	printi(check(23)); /*expect: 1*/
+	print("\n");
+	printi(check(71)); /*expect: 1*/
+	print("\n");
+	printi(check(72)); /*expect: 0*/
+	print("\n");
+	printi(check(173)); /*expect: 1*/
+	print("\n");
+	printi(check(181)); /*expect: 1*/
+	print("\n");
+	printi(check(281)); /*expect: 1*/
+	print("\n");
+	printi(check(659)); /*expect: 1*/
+	print("\n");
+	printi(check(729)); /*expect: 0*/
+	print("\n");
+	printi(check(947)); /*expect: 1*/
+	print("\n");
+	printi(check(945)); /*expect: 0*/
+	print("\n")
+    )
+ in try()
+end
+	

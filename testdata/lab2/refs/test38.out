@@ -1,0 +1,12 @@
+       LET  156
+      TYPE  161
+        ID  166 a
+        EQ  168
+        ID  170 int
+      TYPE  175
+        ID  180 a
+        EQ  182
+        ID  184 string
+        IN  191
+       INT  195 0
+       END  197

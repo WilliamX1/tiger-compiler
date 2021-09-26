@@ -1,0 +1,15 @@
+ whileExp(
+  opExp(
+   GREAT,
+   intExp(10),
+   intExp(5)),
+  seqExp(
+   expList(
+    opExp(
+     PLUS,
+     varExp(
+      simpleVar(i)),
+     intExp(1)),
+    expList(
+     voidExp(),
+     expList()))))

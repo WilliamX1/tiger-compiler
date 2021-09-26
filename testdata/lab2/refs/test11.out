@@ -1,0 +1,12 @@
+       FOR   78
+        ID   82 i
+    ASSIGN   83
+       INT   85 10
+        TO   88
+    STRING   91  
+        DO   95
+        ID  100 i
+    ASSIGN  102
+        ID  105 i
+     MINUS  107
+       INT  109 1

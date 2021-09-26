@@ -1,0 +1,11 @@
+       LET   34
+       VAR   40
+        ID   44 d
+    ASSIGN   45
+       INT   47 0
+        IN   49
+        ID   53 d
+    LBRACK   54
+       INT   55 3
+    RBRACK   56
+       END   58

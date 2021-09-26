@@ -1,0 +1,10 @@
+        IF   18
+    LPAREN   21
+       INT   22 10
+        GT   25
+       INT   27 20
+    RPAREN   29
+      THEN   31
+       INT   36 30
+      ELSE   39
+       INT   44 40

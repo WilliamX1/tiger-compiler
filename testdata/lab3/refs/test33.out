@@ -1,0 +1,11 @@
+ letExp(
+  decList(
+   varDec(a,
+    recordExp(rectype,
+     efieldList()),
+    TRUE),
+   decList()),
+  seqExp(
+   expList(
+    intExp(0),
+    expList())))

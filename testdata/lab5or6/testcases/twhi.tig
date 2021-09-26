@@ -1,0 +1,7 @@
+let
+	var a := 10
+
+in
+	while a >= 0
+	do (printi(a);a := a - 1;if a = 2 then break)
+end

@@ -1,0 +1,51 @@
+       LET   39
+      TYPE   45
+        ID   50 arrtype
+        EQ   58
+     ARRAY   60
+        OF   66
+        ID   69 int
+      TYPE   74
+        ID   79 rectype
+        EQ   87
+    LBRACE   89
+        ID   90 name
+     COLON   94
+        ID   95 string
+     COMMA  101
+        ID  103 id
+     COLON  105
+        ID  107 int
+    RBRACE  110
+       VAR  114
+        ID  118 rec
+    ASSIGN  122
+        ID  125 rectype
+    LBRACE  133
+        ID  134 name
+        EQ  138
+    STRING  139 aname
+     COMMA  146
+        ID  148 id
+        EQ  150
+       INT  151 0
+    RBRACE  152
+       VAR  155
+        ID  159 arr
+    ASSIGN  163
+        ID  166 arrtype
+    LBRACK  174
+       INT  175 3
+    RBRACK  176
+        OF  178
+       INT  181 0
+        IN  184
+        IF  188
+        ID  191 rec
+       NEQ  195
+        ID  198 arr
+      THEN  202
+       INT  207 3
+      ELSE  209
+       INT  214 4
+       END  216

@@ -1,0 +1,12 @@
+       LET  140
+       VAR  145
+        ID  149 a
+    ASSIGN  151
+       INT  154 0
+       VAR  157
+        ID  161 a
+    ASSIGN  163
+    STRING  166  
+        IN  170
+       INT  174 0
+       END  176

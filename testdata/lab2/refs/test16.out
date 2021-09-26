@@ -1,0 +1,20 @@
+       LET   80
+      TYPE   86
+        ID   91 a
+        EQ   92
+        ID   93 c
+      TYPE   95
+        ID  100 b
+        EQ  101
+        ID  102 a
+      TYPE  104
+        ID  109 c
+        EQ  110
+        ID  111 d
+      TYPE  113
+        ID  118 d
+        EQ  119
+        ID  120 a
+        IN  123
+    STRING  127 (null)
+       END  130

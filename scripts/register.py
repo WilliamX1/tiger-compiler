@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 name = input("Please enter your name: ")
 sid = input("Please enter your student ID: ")

@@ -1,0 +1,12 @@
+let
+
+	function a(x:int) : int =
+	let
+		function b(y:int) : int = x + y
+	in
+		b(3)
+	end
+in
+	printi(a(2))
+end
+

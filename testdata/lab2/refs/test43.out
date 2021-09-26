@@ -1,0 +1,11 @@
+       LET   67
+       VAR   73
+        ID   77 a
+    ASSIGN   79
+    LPAREN   82
+    RPAREN   83
+        IN   85
+        ID   89 a
+      PLUS   91
+       INT   93 3
+       END   95

@@ -1,0 +1,13 @@
+ letExp(
+  decList(
+   varDec(d,
+    intExp(0),
+    TRUE),
+   decList()),
+  seqExp(
+   expList(
+    varExp(
+     subscriptVar(
+      simpleVar(d),
+      intExp(3))),
+    expList())))

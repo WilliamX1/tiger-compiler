@@ -1,0 +1,28 @@
+       LET   26
+      TYPE   33
+        ID   38 a
+        EQ   40
+     ARRAY   42
+        OF   48
+        ID   51 int
+      TYPE   57
+        ID   62 b
+        EQ   64
+        ID   66 a
+       VAR   71
+        ID   75 arr1
+     COLON   79
+        ID   80 a
+    ASSIGN   82
+        ID   85 b
+    LBRACK   87
+       INT   88 10
+    RBRACK   90
+        OF   92
+       INT   95 0
+        IN   97
+        ID  102 arr1
+    LBRACK  106
+       INT  107 2
+    RBRACK  108
+       END  110

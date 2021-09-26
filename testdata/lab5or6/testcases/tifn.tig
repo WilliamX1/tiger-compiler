@@ -1,0 +1,11 @@
+let
+	var b : int := 5 
+	function g(a:int) = 
+	if( a > 3 )
+	then print("hey! Bigger than 3!\n")
+	else b := 4
+
+
+in
+	printi(b);print("\n");g(2);printi(b)
+end

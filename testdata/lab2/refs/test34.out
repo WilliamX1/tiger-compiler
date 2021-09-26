@@ -1,0 +1,24 @@
+       LET   56
+  FUNCTION   61
+        ID   70 g
+    LPAREN   72
+        ID   73 a
+     COLON   74
+        ID   75 int
+     COMMA   79
+        ID   81 b
+     COLON   82
+        ID   83 string
+    RPAREN   89
+     COLON   90
+        ID   91 int
+        EQ   95
+        ID   97 a
+        IN   99
+        ID  103 g
+    LPAREN  104
+    STRING  105 one
+     COMMA  110
+    STRING  112 two
+    RPAREN  117
+       END  119

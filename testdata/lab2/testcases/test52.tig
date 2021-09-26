@@ -1,0 +1,12 @@
+let
+	var a := "compilers\n"
+	var b := "\099\111\109\112\105\108\101\114\115\n"
+	var c := "c\to\tm\tp\ti\tl\te\tr\ts\t\n"
+	var d := "\"compilers\"\n"
+	var e := "\\compilers\\\n"
+	var f := "commmmmmmmmmmmm\
+	         \lerssssssssssss\n"
+	var g := "\^C\^O\^M\^P\^I\^L\^E\^R\^S\n"
+in
+	0
+end

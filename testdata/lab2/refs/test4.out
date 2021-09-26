@@ -1,0 +1,32 @@
+       LET   35
+  FUNCTION   59
+        ID   68 nfactor
+    LPAREN   75
+        ID   76 n
+     COLON   77
+        ID   79 int
+    RPAREN   82
+     COLON   83
+        ID   85 int
+        EQ   89
+        IF   93
+        ID   97 n
+        EQ   99
+       INT  101 0
+      THEN  107
+       INT  112 1
+      ELSE  117
+        ID  122 n
+     TIMES  124
+        ID  126 nfactor
+    LPAREN  133
+        ID  134 n
+     MINUS  135
+       INT  136 1
+    RPAREN  137
+        IN  140
+        ID  144 nfactor
+    LPAREN  151
+       INT  152 10
+    RPAREN  154
+       END  156

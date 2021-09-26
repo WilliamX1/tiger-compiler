@@ -1,0 +1,8 @@
+let
+	function g(a:int, b:int, c:int, d:int) : int = 
+		if a > b | c < d
+		then a + d
+		else c + b
+in
+	printi(g(9,4,3,2))
+end

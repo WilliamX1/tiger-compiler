@@ -1,0 +1,16 @@
+       LET   39
+  FUNCTION   44
+        ID   53 g
+    LPAREN   54
+        ID   55 a
+     COLON   56
+        ID   57 int
+    RPAREN   60
+        EQ   62
+        ID   64 a
+        IN   66
+        ID   71 g
+    LPAREN   72
+       INT   73 2
+    RPAREN   74
+       END   76

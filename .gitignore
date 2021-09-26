@@ -29,3 +29,5 @@ _deps
 
 # idea
 .idea
+
+*.log

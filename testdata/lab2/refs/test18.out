@@ -1,0 +1,57 @@
+       LET   64
+  FUNCTION   69
+        ID   78 do_nothing1
+    LPAREN   89
+        ID   90 a
+     COLON   91
+        ID   93 int
+     COMMA   96
+        ID   98 b
+     COLON   99
+        ID  101 string
+    RPAREN  107
+     COLON  108
+        ID  109 int
+        EQ  112
+    LPAREN  116
+        ID  117 do_nothing2
+    LPAREN  128
+        ID  129 a
+      PLUS  130
+       INT  131 1
+    RPAREN  132
+ SEMICOLON  133
+       INT  134 0
+    RPAREN  135
+       VAR  138
+        ID  142 d
+    ASSIGN  143
+       INT  145 0
+  FUNCTION  148
+        ID  157 do_nothing2
+    LPAREN  168
+        ID  169 d
+     COLON  170
+        ID  172 int
+    RPAREN  175
+     COLON  176
+        ID  177 string
+        EQ  184
+    LPAREN  188
+        ID  189 do_nothing1
+    LPAREN  200
+        ID  201 d
+     COMMA  202
+    STRING  204 str
+    RPAREN  209
+ SEMICOLON  210
+    STRING  211  
+    RPAREN  214
+        IN  217
+        ID  221 do_nothing1
+    LPAREN  232
+       INT  233 0
+     COMMA  234
+    STRING  236 str2
+    RPAREN  242
+       END  244

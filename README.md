@@ -6,50 +6,34 @@
   - [Contents](#contents)
   - [Overview](#overview)
   - [Difference Between C Labs and C++ Labs](#difference-between-c-labs-and-c-labs)
-  - [Getting Newly Released Labs](#getting-newly-released-labs)
   - [Installing Dependencies](#installing-dependencies)
-    - [Ubuntu18.04](#ubuntu1804)
-    - [MacOS, Windows Professional, Ubuntu16.04, and other Linux Distributions](#macos-windows-professional-ubuntu1604-and-other-linux-distributions)
-  - [Compiling](#compiling)
-  - [Debugging](#debugging)
-  - [Grading Your Labs](#grading-your-labs)
+  - [Compiling and Debugging](#compiling-and-debugging)
+  - [Testing Your Labs](#testing-your-labs)
   - [Submitting Your Labs](#submitting-your-labs)
-  - [FAQ](#faq)
+  - [Formatting Your Codes](#formatting-your-codes)
+  - [Other Commands](#other-commands)
+  - [Contributing to Tiger Compiler](#contributing-to-tiger-compiler)
+  - [External Documentations](#external-documentations)
 
 ## Overview
 
-We rewrote the Tiger Compiler labs using the C++ programming language. This is
-because C++ has some features like inheritance and polymorphism, which we think
-is more suitable for these labs and less error-prone.
+We rewrote the Tiger Compiler labs using the C++ programming language because some features in C++ like inheritance and polymorphism
+are more suitable for these labs and less error-prone.
 
 We provide you all the codes of all labs at one time. In each lab, you only
 need to code in some of the directories.
 
-The Tiger Compiler Labs are not perfect, but we have tried our best and spent a
-lot of time on it. If you find any bugs or have a better design, please inform
-us.
-
 ## Difference Between C Labs and C++ Labs
 
-1. This new labs use [flexc++](https://fbb-git.gitlab.io/flexcpp/manual/flexc++.html) and [bisonc++](https://fbb-git.gitlab.io/bisoncpp/manual/bisonc++.html) instead of flex and bison because flexc++ and bisonc++ is more flexc++ and bisonc++ are able to generate pure C++ codes instead of C codes wrapped in C++ files.
+1. Tiger compiler in C++ uses [flexc++](https://fbb-git.gitlab.io/flexcpp/manual/flexc++.html) and [bisonc++](https://fbb-git.gitlab.io/bisoncpp/manual/bisonc++.html) instead of flex and bison because flexc++ and bisonc++ is more flexc++ and bisonc++ are able to generate pure C++ codes instead of C codes wrapped in C++ files.
 
-2. The new labs use namespace for modularization and use inheritance and polymorphism to replace unions used in the old labs.
+2. Tiger compiler in C++ uses namespace for modularization and uses inheritance and polymorphism to replace unions used in the old labs.
 
-3. These new labs use CMake instead of Makefile to compile and build the target.
+3. Tiger compiler in C++ uses CMake instead of Makefile to compile and build the target.
+
+<!---4. We've introduced lots of modern C++-style codes into tiger compiler, e.g., smart pointers, RAII, RTTI. To get familiar with the features of modern C++ and get recommendations for writing code in modern C++ style, please refer to [this doc](https://ipads.se.sjtu.edu.cn/courses/compilers/tiger-compiler-cpp-style.html) on our course website.-->
 
 ## Installing Dependencies
-
-flexc++ and bisonc++ will be needed in lab2 and later.
-Although these libraries are not needed in lab1, you have to install them before you start lab1.
-
-**Notice:**: Now we only support the following version of flexc++ and bisonc++:
-
-```bash
-flexc++ - V2.06.02
-bisonc++ - V6.01.00
-```
-
-### Docker (Recommended)
 
 We provide you a Docker image that has already installed all the dependencies. You can compile your codes directly in this Docker image.
 
@@ -58,31 +42,23 @@ We provide you a Docker image that has already installed all the dependencies. Y
 2. Run a docker container and mount the lab directory on it.
 
 ```bash
-docker run -it --privileged -p 2222:22 -v ${PWD}:/home/stu/tiger-compiler ipadsse302/tigerlabs_env:latest  # or make docker-run
+# Run this command in the root directory of the project
+docker run -it --privileged -p 2222:22 -v $(pwd):/home/stu/tiger-compiler ipadsse302/tigerlabs_env:latest  # or make docker-run
 ```
-
-### Ubuntu18.04
-
-```bash
-sudo apt install git tar cmake g++ gcc gdb flexc++ bisonc++
-```
-
-**Notice:** This series of labs now only support Ubuntu18.04. For those who use **Ubuntu16.04**, you still need to use Docker to build and run your labs.
 
 ## Compiling and Debugging
 
-There are five makeable targets in total, including `test_slp`, `test_lex`
-, `test_parse`, `test_semant`,  and `tiger-compiler`.
+There are five makeable targets in total, including `test_slp`, `test_lex`, `test_parse`, `test_semant`,  and `tiger-compiler`.
 
 1. Run container environment and attach to it
 
 ```bash
 # Run container and directly attach to it
 docker run -it --privileged -p 2222:22 \
-    -v ${PWD}:/home/stu/tiger-compiler ipadsse302/tigerlabs_env:latest  # or `make docker-run`
+    -v $(pwd):/home/stu/tiger-compiler ipadsse302/tigerlabs_env:latest  # or `make docker-run`
 # Or run container in the backend and attach to it later
 docker run -dt --privileged -p 2222:22 \
-    -v ${PWD}:/home/stu/tiger-compiler ipadsse302/tigerlabs_env:latest
+    -v $(pwd):/home/stu/tiger-compiler ipadsse302/tigerlabs_env:latest
 docker attach ${YOUR_CONTAINER_ID}
 ```
 
@@ -109,8 +85,7 @@ make gradelabx
 ```
 or run the script manually
 ```bash
-# cd to the lab root directory, i.e. compilers-2021
-./scripts/gradelabx.sh # e.g. `./gradelab1.sh`
+./scripts/grade.sh [lab1|lab2|lab3|lab4|lab5|lab6|all] # e.g. `./scripts/grade.sh lab1`
 ```
 
 You can test all the labs by
@@ -120,7 +95,7 @@ make gradeall
 
 ## Submitting Your Labs
 
-Run `make register` and input your name in English and student ID. You can
+**Run `make register` and input your name in English and student ID.** You can
 check it in the `.info` file generated later.
 
 We are using CI in GitLab to grade your labs automatically. **So please make
@@ -134,8 +109,8 @@ git commit -m "A message"
 git push
 ```
 
-Wait for a while and check the latest pipeline (`Your GitLab repo - CI/CD -
-Pipelines`) passed. Otherwise, you won't get a full score in your lab.
+**Wait for a while and check the latest pipeline (`Your GitLab repo - CI/CD -
+Pipelines`) passed. Otherwise, you won't get a full score in your lab.**
 
 ## Formatting Your Codes
 
@@ -154,4 +129,13 @@ Utility commands can be found in the `Makefile`. They can be directly run by `ma
 
 ## Contributing to Tiger Compiler
 
-You can post questions, issues, feedback, or even MR proposals through (our main GitLab repository)[https://ipads.se.sjtu.edu.cn:2020/compilers-2021/compilers-2021/issues]. We are rapidly refactoring the original C tiger compiler implementation into modern C++ style, so any suggestion to make this lab better is welcomed.
+You can post questions, issues, feedback, or even MR proposals through [our main GitLab repository](https://ipads.se.sjtu.edu.cn:2020/compilers-2021/compilers-2021/issues). We are rapidly refactoring the original C tiger compiler implementation into modern C++ style, so any suggestion to make this lab better is welcomed.
+
+## External Documentations
+
+You can read external documentations on our course website:
+
+- [Lab Assignments](https://ipads.se.sjtu.edu.cn/courses/compilers/labs.shtml)
+- [Environment Configuration of Tiger Compiler Labs](https://ipads.se.sjtu.edu.cn/courses/compilers/tiger-compiler-environment.html)
+<!---- [Tiger Compiler in Modern C++ Style](https://ipads.se.sjtu.edu.cn/courses/compilers/tiger-compiler-cpp-style.html)-->
+

@@ -1,0 +1,14 @@
+ letExp(
+  decList(
+   varDec(a,
+    intExp(0),
+    TRUE),
+   decList(
+    varDec(a,
+     stringExp( ),
+     TRUE),
+    decList())),
+  seqExp(
+   expList(
+    intExp(0),
+    expList())))

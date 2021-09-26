@@ -1,0 +1,41 @@
+/* Decimal to Binary */
+
+let
+/*
+    function dec2bin(num:int) =
+	(while num<>0
+		do (
+			printi(num-num/2*2);
+			num:=num/2
+		);
+		print("\n")
+	)
+	*/
+    function dec2bin(num:int) =
+	(	if num>0 then
+			(dec2bin(num/2);
+			printi(num-num/2*2))
+	)
+    
+    function try() = 
+    (
+    	printi(100);
+	print("\t->\t");
+	dec2bin(100);
+	print("\n");
+    	printi(200);
+	print("\t->\t");
+	dec2bin(200);
+	print("\n");
+    	printi(789);
+	print("\t->\t");
+	dec2bin(789);
+	print("\n");
+    	printi(567);
+	print("\t->\t");
+	dec2bin(567);
+	print("\n")
+    )
+ in try()
+end
+	

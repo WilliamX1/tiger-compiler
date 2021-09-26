@@ -1,0 +1,24 @@
+       LET   26
+       VAR   31
+        ID   35 a
+    ASSIGN   36
+       INT   39 0
+        IN   41
+       FOR   46
+        ID   50 i
+    ASSIGN   51
+       INT   53 0
+        TO   55
+       INT   58 100
+        DO   62
+    LPAREN   65
+        ID   66 a
+    ASSIGN   67
+        ID   69 a
+      PLUS   70
+       INT   71 1
+ SEMICOLON   72
+    LPAREN   73
+    RPAREN   74
+    RPAREN   75
+       END   77

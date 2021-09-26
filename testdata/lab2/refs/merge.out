@@ -1,0 +1,411 @@
+       LET    1
+      TYPE    8
+        ID   13 any
+        EQ   17
+    LBRACE   19
+        ID   20 any
+     COLON   24
+        ID   26 int
+    RBRACE   29
+       VAR   32
+        ID   36 buffer
+    ASSIGN   43
+        ID   46 getchar
+    LPAREN   53
+    RPAREN   54
+  FUNCTION   57
+        ID   66 readint
+    LPAREN   73
+        ID   74 any
+     COLON   77
+        ID   79 any
+    RPAREN   82
+     COLON   84
+        ID   86 int
+        EQ   90
+       LET   93
+       VAR   97
+        ID  101 i
+    ASSIGN  103
+       INT  106 0
+  FUNCTION  113
+        ID  122 isdigit
+    LPAREN  129
+        ID  130 s
+     COLON  132
+        ID  134 string
+    RPAREN  140
+     COLON  142
+        ID  144 int
+        EQ  148
+        ID  155 ord
+    LPAREN  158
+        ID  159 buffer
+    RPAREN  165
+        GE  166
+        ID  168 ord
+    LPAREN  171
+    STRING  172 0
+    RPAREN  175
+       AND  177
+        ID  179 ord
+    LPAREN  182
+        ID  183 buffer
+    RPAREN  189
+        LE  190
+        ID  192 ord
+    LPAREN  195
+    STRING  196 9
+    RPAREN  199
+  FUNCTION  206
+        ID  215 skipto
+    LPAREN  221
+    RPAREN  222
+        EQ  224
+     WHILE  233
+        ID  239 buffer
+        EQ  245
+    STRING  246  
+        OR  250
+        ID  252 buffer
+        EQ  258
+    STRING  259 
+
+        DO  273
+        ID  276 buffer
+    ASSIGN  283
+        ID  286 getchar
+    LPAREN  293
+    RPAREN  294
+        IN  298
+        ID  301 skipto
+    LPAREN  307
+    RPAREN  308
+ SEMICOLON  309
+        ID  316 any
+       DOT  319
+        ID  320 any
+    ASSIGN  324
+        ID  327 isdigit
+    LPAREN  334
+        ID  335 buffer
+    RPAREN  341
+ SEMICOLON  342
+     WHILE  349
+        ID  355 isdigit
+    LPAREN  362
+        ID  363 buffer
+    RPAREN  369
+        DO  378
+    LPAREN  381
+        ID  382 i
+    ASSIGN  384
+        ID  387 i
+     TIMES  388
+       INT  389 10
+      PLUS  391
+        ID  392 ord
+    LPAREN  395
+        ID  396 buffer
+    RPAREN  402
+     MINUS  403
+        ID  404 ord
+    LPAREN  407
+    STRING  408 0
+    RPAREN  411
+ SEMICOLON  412
+        ID  414 buffer
+    ASSIGN  421
+        ID  424 getchar
+    LPAREN  431
+    RPAREN  432
+    RPAREN  433
+ SEMICOLON  434
+        ID  441 i
+       END  444
+      TYPE  450
+        ID  455 list
+        EQ  460
+    LBRACE  462
+        ID  463 first
+     COLON  468
+        ID  470 int
+     COMMA  473
+        ID  475 rest
+     COLON  479
+        ID  481 list
+    RBRACE  485
+  FUNCTION  489
+        ID  498 readlist
+    LPAREN  506
+    RPAREN  507
+     COLON  509
+        ID  511 list
+        EQ  516
+       LET  522
+       VAR  526
+        ID  530 any
+    ASSIGN  534
+        ID  537 any
+    LBRACE  540
+        ID  541 any
+        EQ  544
+       INT  545 0
+    RBRACE  546
+       VAR  556
+        ID  560 i
+    ASSIGN  562
+        ID  565 readint
+    LPAREN  572
+        ID  573 any
+    RPAREN  576
+        IN  583
+        IF  586
+        ID  589 any
+       DOT  592
+        ID  593 any
+      THEN  606
+        ID  611 list
+    LBRACE  615
+        ID  616 first
+        EQ  621
+        ID  622 i
+     COMMA  623
+        ID  624 rest
+        EQ  628
+        ID  629 readlist
+    LPAREN  637
+    RPAREN  638
+    RBRACE  639
+      ELSE  650
+       NIL  655
+       END  663
+  FUNCTION  669
+        ID  678 merge
+    LPAREN  683
+        ID  684 a
+     COLON  685
+        ID  687 list
+     COMMA  691
+        ID  693 b
+     COLON  694
+        ID  696 list
+    RPAREN  700
+     COLON  702
+        ID  704 list
+        EQ  709
+        IF  714
+        ID  717 a
+        EQ  718
+       NIL  719
+      THEN  723
+        ID  728 b
+      ELSE  733
+        IF  738
+        ID  741 b
+        EQ  742
+       NIL  743
+      THEN  747
+        ID  752 a
+      ELSE  757
+        IF  762
+        ID  765 a
+       DOT  766
+        ID  767 first
+        LT  773
+        ID  775 b
+       DOT  776
+        ID  777 first
+      THEN  790
+        ID  795 list
+    LBRACE  799
+        ID  800 first
+        EQ  805
+        ID  806 a
+       DOT  807
+        ID  808 first
+     COMMA  813
+        ID  814 rest
+        EQ  818
+        ID  819 merge
+    LPAREN  824
+        ID  825 a
+       DOT  826
+        ID  827 rest
+     COMMA  831
+        ID  832 b
+    RPAREN  833
+    RBRACE  834
+      ELSE  842
+        ID  847 list
+    LBRACE  851
+        ID  852 first
+        EQ  857
+        ID  858 b
+       DOT  859
+        ID  860 first
+     COMMA  865
+        ID  866 rest
+        EQ  870
+        ID  871 merge
+    LPAREN  876
+        ID  877 a
+     COMMA  878
+        ID  879 b
+       DOT  880
+        ID  881 rest
+    RPAREN  885
+    RBRACE  886
+  FUNCTION  890
+        ID  899 printint
+    LPAREN  907
+        ID  908 i
+     COLON  909
+        ID  911 int
+    RPAREN  914
+        EQ  916
+       LET  920
+  FUNCTION  924
+        ID  933 f
+    LPAREN  934
+        ID  935 i
+     COLON  936
+        ID  937 int
+    RPAREN  940
+        EQ  942
+        IF  944
+        ID  947 i
+        GT  948
+       INT  949 0
+      THEN  958
+    LPAREN  963
+        ID  964 f
+    LPAREN  965
+        ID  966 i
+    DIVIDE  967
+       INT  968 10
+    RPAREN  970
+ SEMICOLON  971
+        ID  973 print
+    LPAREN  978
+        ID  979 chr
+    LPAREN  982
+        ID  983 i
+     MINUS  984
+        ID  985 i
+    DIVIDE  986
+       INT  987 10
+     TIMES  989
+       INT  990 10
+      PLUS  992
+        ID  993 ord
+    LPAREN  996
+    STRING  997 0
+    RPAREN 1000
+    RPAREN 1001
+    RPAREN 1002
+    RPAREN 1003
+        IN 1008
+        IF 1011
+        ID 1014 i
+        LT 1015
+       INT 1016 0
+      THEN 1018
+    LPAREN 1023
+        ID 1024 print
+    LPAREN 1029
+    STRING 1030 -
+    RPAREN 1033
+ SEMICOLON 1034
+        ID 1036 f
+    LPAREN 1037
+     MINUS 1038
+        ID 1039 i
+    RPAREN 1040
+    RPAREN 1041
+      ELSE 1049
+        IF 1054
+        ID 1057 i
+        GT 1058
+       INT 1059 0
+      THEN 1061
+        ID 1066 f
+    LPAREN 1067
+        ID 1068 i
+    RPAREN 1069
+      ELSE 1077
+        ID 1082 print
+    LPAREN 1087
+    STRING 1088 0
+    RPAREN 1091
+       END 1095
+  FUNCTION 1101
+        ID 1110 printlist
+    LPAREN 1119
+        ID 1120 l
+     COLON 1121
+        ID 1123 list
+    RPAREN 1127
+        EQ 1129
+        IF 1134
+        ID 1137 l
+        EQ 1138
+       NIL 1139
+      THEN 1143
+        ID 1148 print
+    LPAREN 1153
+    STRING 1154 
+
+    RPAREN 1158
+      ELSE 1163
+    LPAREN 1168
+        ID 1169 printint
+    LPAREN 1177
+        ID 1178 l
+       DOT 1179
+        ID 1180 first
+    RPAREN 1185
+ SEMICOLON 1186
+        ID 1188 print
+    LPAREN 1193
+    STRING 1194  
+    RPAREN 1197
+ SEMICOLON 1198
+        ID 1200 printlist
+    LPAREN 1209
+        ID 1210 l
+       DOT 1211
+        ID 1212 rest
+    RPAREN 1216
+    RPAREN 1217
+       VAR 1223
+        ID 1227 list1
+    ASSIGN 1233
+        ID 1236 readlist
+    LPAREN 1244
+    RPAREN 1245
+       VAR 1250
+        ID 1254 list2
+    ASSIGN 1260
+    LPAREN 1263
+        ID 1264 buffer
+    ASSIGN 1270
+        ID 1272 getchar
+    LPAREN 1279
+    RPAREN 1280
+ SEMICOLON 1281
+        ID 1283 readlist
+    LPAREN 1291
+    RPAREN 1292
+    RPAREN 1293
+        IN 1327
+        ID 1330 printlist
+    LPAREN 1339
+        ID 1340 merge
+    LPAREN 1345
+        ID 1346 list1
+     COMMA 1351
+        ID 1352 list2
+    RPAREN 1357
+    RPAREN 1358
+       END 1360

@@ -1,0 +1,37 @@
+       LET   43
+      TYPE   48
+        ID   54 rectype
+        EQ   62
+    LBRACE   64
+        ID   65 name
+     COLON   69
+        ID   70 string
+     COMMA   76
+        ID   78 age
+     COLON   81
+        ID   82 int
+    RBRACE   85
+       VAR   88
+        ID   92 rec1
+     COLON   96
+        ID   97 rectype
+    ASSIGN  105
+        ID  108 rectype
+    LBRACE  116
+        ID  117 name
+        EQ  121
+    STRING  122 Nobody
+     COMMA  130
+        ID  132 age
+        EQ  135
+       INT  136 1000
+    RBRACE  140
+        IN  142
+        ID  146 rec1
+       DOT  150
+        ID  151 name
+    ASSIGN  156
+    STRING  159 Somebody
+ SEMICOLON  169
+        ID  172 rec1
+       END  177

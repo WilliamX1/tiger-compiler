@@ -92,3 +92,5 @@
 
  /* illegal input */
 . {adjust(); errormsg_->Error(errormsg_->tok_pos_, "illegal token");}
+ /* end of file */
+<<EOF>>  return 0;

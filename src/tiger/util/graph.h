@@ -103,7 +103,7 @@ public:
   void CatList(NodeList<T> *nl);
   void DeleteNode(Node<T> *n);
   void Clear() { node_list_.clear(); }
-  void Insert(Node<T> *n) { node_list_.push_front(n); }
+  void Prepend(Node<T> *n) { node_list_.push_front(n); }
   void Append(Node<T> *n) { node_list_.push_back(n); }
 
   // Set operation on two lists

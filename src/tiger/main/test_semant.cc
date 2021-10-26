@@ -4,7 +4,7 @@
 #include "tiger/absyn/absyn.h"
 #include "tiger/errormsg/errormsg.h"
 #include "tiger/parse/parser.h"
-#include "tiger/translate/translate.h"
+#include "tiger/semant/semant.h"
 
 int main(int argc, char **argv) {
   std::unique_ptr<absyn::AbsynTree> absyn_tree;
@@ -23,9 +23,8 @@ int main(int argc, char **argv) {
   }
 
   {
-    tr::ProgTr program_translator(std::move(absyn_tree), std::move(errormsg),
-                                  nullptr);
-    program_translator.SemAnalyze();
+    sem::ProgSem program_sem_analyzer(std::move(absyn_tree), std::move(errormsg));
+    program_sem_analyzer.SemAnalyze();
   }
   return 0;
 }

@@ -31,3 +31,6 @@ _deps
 .idea
 
 *.log
+
+# python cache
+*.pyc

@@ -370,6 +370,41 @@ void FieldList::Print(FILE *out, int d) const {
     fprintf(out, "fieldList()");
 }
 
+type::TyList *FieldList::MakeFormalTyList(env::TEnvPtr tenv,
+                                          err::ErrorMsg *errormsg) const {
+  auto formal_tylist = new type::TyList();
+
+  for (absyn::Field *param : field_list_) {
+    type::Ty *ty = tenv->Look(param->typ_);
+
+    if (!ty) {
+      errormsg->Error(param->pos_, "undefined type %s",
+                      param->typ_->Name().c_str());
+    }
+    formal_tylist->Append(ty);
+  }
+
+  return formal_tylist;
+}
+
+type::FieldList *FieldList::MakeFieldList(env::TEnvPtr tenv,
+                                          err::ErrorMsg *errormsg) const {
+  if (field_list_.empty()) {
+    return new type::FieldList();
+  }
+
+  auto ty_field_list = new type::FieldList();
+
+  for (absyn::Field *a_field : field_list_) {
+    type::Ty *ty = tenv->Look(a_field->typ_);
+    if (ty == nullptr) {
+      errormsg->Error(a_field->pos_, "undefined type %s",
+                      a_field->typ_->Name().c_str());
+    }
+    ty_field_list->Append(new type::Field(a_field->name_, ty));
+  }
+  return ty_field_list;
+}
 
 void ExpList::Print(FILE *out, int d) const {
   Indent(out, d);

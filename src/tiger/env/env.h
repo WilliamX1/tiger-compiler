@@ -9,7 +9,11 @@ class EnvEntry {
 public:
   bool readonly_;
 
-  explicit EnvEntry(bool readonly = true) : readonly_(readonly) {}
+  enum Kind {VAR, FUN};
+
+  Kind kind_;
+
+  explicit EnvEntry(Kind kind, bool readonly = true) : kind_(kind), readonly_(readonly) {}
   virtual ~EnvEntry() = default;
 };
 
@@ -19,7 +23,7 @@ public:
 
   // For lab4(semantic analysis) only
   explicit VarEntry(type::Ty *ty, bool readonly = false)
-      : EnvEntry(readonly), ty_(ty){};
+      : EnvEntry(VAR, readonly), ty_(ty) {};
 };
 
 class FunEntry : public EnvEntry {
@@ -29,7 +33,7 @@ public:
 
   // For lab4(semantic analysis) only
   FunEntry(type::TyList *formals, type::Ty *result)
-      : formals_(formals), result_(result){}
+      : EnvEntry(FUN, true), formals_(formals), result_(result) {}
 
 };
 

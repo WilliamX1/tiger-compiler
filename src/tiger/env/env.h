@@ -52,7 +52,7 @@ public:
   // For lab5(translate IR tree)
   FunEntry(tr::Level *level, temp::Label *label, type::TyList *formals,
            type::Ty *result)
-      : formals_(formals), result_(result), level_(level), label_(label) {}
+      : EnvEntry(FUN, true), formals_(formals), result_(result), level_(level), label_(label) {}
 };
 
 using VEnv = sym::Table<env::EnvEntry>;

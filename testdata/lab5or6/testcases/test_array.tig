@@ -1,0 +1,15 @@
+let
+    var N := 8
+
+    type t = {a:int, b:int}
+    type strArray = array of string
+    type recArray = array of t
+
+    var row := strArray [ N ] of "a"
+    var x := recArray [ N ] of t{a=1,b=2}
+
+in
+    print(row[0]);
+    printi(x[0].a);
+    printi(x[1].b)
+end

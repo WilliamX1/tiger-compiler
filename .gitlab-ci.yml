@@ -42,6 +42,17 @@ test_lab4:
     - make gradelab4 | tee output.log
     - python3 upload.py
 
+test_lab5_part1:
+ image: ipadsse302/tigerlabs_score_env
+ tags:
+   - val runner docker executor
+ stage: test
+ script:
+   - rm -rf scripts testdata
+   - cp -r /home/stu/upload.py /home/stu/scripts /home/stu/testdata .
+   - make gradelab5-1 | tee output.log
+   - python3 upload.py
+
 # test_lab5:
 #  image: ipadsse302/tigerlabs_score_env
 #  tags:

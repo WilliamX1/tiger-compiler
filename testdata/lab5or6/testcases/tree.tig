@@ -1,0 +1,51 @@
+let
+
+  type node = { key: int, left: node, right: node }
+
+  /* Insert t2 as t1's children */
+  function insert(t1: node, t2: node) : node =
+    if t1 = nil 
+      then t2 
+      else 
+        if t1.key > t2.key 
+          then node { key = t1.key, left = insert(t1.left, t2), right = t1.right }
+          else node { key = t1.key, left = t1.left, right = insert(t1.right, t2) }
+        
+  function printint(i: int) = 
+    let 
+      function f(i: int) = 
+        if i > 0 then 
+          (f(i/10); print(chr(i - i / 10 * 10 + ord("0"))))
+     in 
+      (if i < 0 then (print("-"); f(-i))
+       else if i > 0 then f(i)
+       else print("0");
+       print("\n")
+      )
+    end
+ 
+  /* Inorder Traversal to print the bst three */  
+  function printtree(t: node) = 
+    if t <> nil then 
+      (printtree(t.left); printint(t.key); printtree(t.right))
+
+  function getnode(i: int) : node = 
+    node {key= i, left= nil, right= nil}
+
+  var root : node := nil
+  var node25 : node := getnode(25)
+ 
+ in
+  (root := insert(root, getnode(50));
+   root := insert(root, getnode(75)); 
+   node25 := insert(node25, getnode(5));
+   node25 := insert(node25, getnode(40));
+   root := insert(root, node25);
+   root := insert(root, getnode(80));
+   root := insert(root, getnode(60));
+   root := insert(root, getnode(55));
+   root := insert(root, getnode(33));
+   printtree(root))
+  
+end  
+

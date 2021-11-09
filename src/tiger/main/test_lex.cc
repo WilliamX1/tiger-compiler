@@ -5,6 +5,10 @@
 
 #include "tiger/lex/scanner.h"
 
+// Define here to pass compilation, but no use here
+frame::RegManager *reg_manager;
+frame::Frags frags;
+
 int main(int argc, char **argv) {
   std::map<int, std::string_view> tokname = {{Parser::ID, "ID"},
                                              {Parser::STRING, "STRING"},

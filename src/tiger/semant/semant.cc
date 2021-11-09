@@ -142,4 +142,5 @@ void ProgSem::SemAnalyze() {
   FillBaseTEnv();
   absyn_tree_->SemAnalyze(venv_.get(), tenv_.get(), errormsg_.get());
 }
-} // namespace sem
+
+} // namespace tr

@@ -1,0 +1,12 @@
+let
+	function g(a:int, b:int, c:int, d:int, e:int, f:int, g:int, h:int) : int = 
+		if a > b | c < d & e = f | g <> h
+		then a + d + e + h 
+		else c + b + g + f
+in
+	(
+		printi(g(9,4,3,2,11,11,23,45)); /* 67 */
+		print("\n");
+		printi(g(4,9,3,2,11,11,23,23))  /* 46 */
+	)
+end

@@ -90,15 +90,18 @@ public:
                                   tr::Level *level, temp::Label *label,
                                   err::ErrorMsg *errormsg) const = 0;
   virtual void Traverse(esc::EscEnvPtr env, int depth) = 0;
+  
+  enum Kind {SIMPLE, FIELD, SUBSCRIPT};
+  Kind kind_;
 
 protected:
-  explicit Var(int pos) : pos_(pos) {}
+  explicit Var(Kind kind, int pos) : kind_(kind), pos_(pos) {}
 };
 
 class SimpleVar : public Var {
 public:
   sym::Symbol *sym_;
-  SimpleVar(int pos, sym::Symbol *sym) : Var(pos), sym_(sym) {}
+  SimpleVar(int pos, sym::Symbol *sym) : Var(SIMPLE, pos), sym_(sym) {}
   ~SimpleVar() override;
 
   void Print(FILE *out, int d) const override;
@@ -116,7 +119,7 @@ public:
   sym::Symbol *sym_;
 
   FieldVar(int pos, Var *var, sym::Symbol *sym)
-      : Var(pos), var_(var), sym_(sym) {}
+      : Var(FIELD, pos), var_(var), sym_(sym) {}
   ~FieldVar() override;
 
   void Print(FILE *out, int d) const override;
@@ -134,7 +137,7 @@ public:
   Exp *subscript_;
 
   SubscriptVar(int pos, Var *var, Exp *exp)
-      : Var(pos), var_(var), subscript_(exp) {}
+      : Var(SUBSCRIPT, pos), var_(var), subscript_(exp) {}
   ~SubscriptVar() override;
 
   void Print(FILE *out, int d) const override;
@@ -163,15 +166,18 @@ public:
                                   err::ErrorMsg *errormsg) const = 0;
   virtual void Traverse(esc::EscEnvPtr env, int depth) = 0;
 
+  enum Kind {VAR, NIL, INT, STRING, CALL, OP, RECORD, SEQ, ASSIGN, IF, WHILE, FOR, BREAK, LET, ARRAY, VOID};
+  Kind kind_;
+
 protected:
-  explicit Exp(int pos) : pos_(pos) {}
+  explicit Exp(Kind kind, int pos) : kind_(kind), pos_(pos) {}
 };
 
 class VarExp : public Exp {
 public:
   Var *var_;
 
-  VarExp(int pos, Var *var) : Exp(pos), var_(var) {}
+  VarExp(int pos, Var *var) : Exp(VAR, pos), var_(var) {}
   ~VarExp() override;
 
   void Print(FILE *out, int d) const override;
@@ -185,7 +191,7 @@ public:
 
 class NilExp : public Exp {
 public:
-  explicit NilExp(int pos) : Exp(pos) {}
+  explicit NilExp(int pos) : Exp(NIL, pos) {}
   ~NilExp() override;
 
   void Print(FILE *out, int d) const override;
@@ -201,7 +207,7 @@ class IntExp : public Exp {
 public:
   int val_;
 
-  IntExp(int pos, int val) : Exp(pos), val_(val) {}
+  IntExp(int pos, int val) : Exp(INT, pos), val_(val) {}
   ~IntExp() override;
 
   void Print(FILE *out, int d) const override;
@@ -217,7 +223,7 @@ class StringExp : public Exp {
 public:
   std::string str_;
 
-  StringExp(int pos, std::string *str) : Exp(pos), str_(*str) {}
+  StringExp(int pos, std::string *str) : Exp(STRING, pos), str_(*str) {}
   ~StringExp() override;
 
   void Print(FILE *out, int d) const override;
@@ -235,7 +241,7 @@ public:
   ExpList *args_;
 
   CallExp(int pos, sym::Symbol *func, ExpList *args)
-      : Exp(pos), func_(func), args_(args) {
+      : Exp(CALL, pos), func_(func), args_(args) {
     assert(args);
   }
   ~CallExp() override;
@@ -255,7 +261,7 @@ public:
   Exp *left_, *right_;
 
   OpExp(int pos, Oper oper, Exp *left, Exp *right)
-      : Exp(pos), oper_(oper), left_(left), right_(right) {}
+      : Exp(OP, pos), oper_(oper), left_(left), right_(right) {}
   ~OpExp() override;
 
   void Print(FILE *out, int d) const override;
@@ -273,7 +279,7 @@ public:
   EFieldList *fields_;
 
   RecordExp(int pos, sym::Symbol *typ, EFieldList *fields)
-      : Exp(pos), typ_(typ), fields_(fields) {}
+      : Exp(RECORD, pos), typ_(typ), fields_(fields) {}
   ~RecordExp() override;
 
   void Print(FILE *out, int d) const override;
@@ -289,7 +295,7 @@ class SeqExp : public Exp {
 public:
   ExpList *seq_;
 
-  SeqExp(int pos, ExpList *seq) : Exp(pos), seq_(seq) {}
+  SeqExp(int pos, ExpList *seq) : Exp(SEQ, pos), seq_(seq) {}
   ~SeqExp() override;
 
   void Print(FILE *out, int d) const override;
@@ -306,7 +312,7 @@ public:
   Var *var_;
   Exp *exp_;
 
-  AssignExp(int pos, Var *var, Exp *exp) : Exp(pos), var_(var), exp_(exp) {}
+  AssignExp(int pos, Var *var, Exp *exp) : Exp(ASSIGN, pos), var_(var), exp_(exp) {}
   ~AssignExp() override;
 
   void Print(FILE *out, int d) const override;
@@ -323,7 +329,7 @@ public:
   Exp *test_, *then_, *elsee_;
 
   IfExp(int pos, Exp *test, Exp *then, Exp *elsee)
-      : Exp(pos), test_(test), then_(then), elsee_(elsee) {}
+      : Exp(IF, pos), test_(test), then_(then), elsee_(elsee) {}
   ~IfExp() override;
 
   void Print(FILE *out, int d) const override;
@@ -340,7 +346,7 @@ public:
   Exp *test_, *body_;
 
   WhileExp(int pos, Exp *test, Exp *body)
-      : Exp(pos), test_(test), body_(body) {}
+      : Exp(WHILE, pos), test_(test), body_(body) {}
   ~WhileExp() override;
 
   void Print(FILE *out, int d) const override;
@@ -359,7 +365,7 @@ public:
   bool escape_;
 
   ForExp(int pos, sym::Symbol *var, Exp *lo, Exp *hi, Exp *body)
-      : Exp(pos), var_(var), lo_(lo), hi_(hi), body_(body), escape_(true) {}
+      : Exp(FOR, pos), var_(var), lo_(lo), hi_(hi), body_(body), escape_(true) {}
   ~ForExp() override;
 
   void Print(FILE *out, int d) const override;
@@ -373,7 +379,8 @@ public:
 
 class BreakExp : public Exp {
 public:
-  explicit BreakExp(int pos) : Exp(pos) {}
+  // bool in_loop_ = false;
+  explicit BreakExp(int pos) : Exp(BREAK, pos) {}
   ~BreakExp() override;
 
   void Print(FILE *out, int d) const override;
@@ -391,7 +398,7 @@ public:
   Exp *body_;
 
   LetExp(int pos, DecList *decs, Exp *body)
-      : Exp(pos), decs_(decs), body_(body) {}
+      : Exp(LET, pos), decs_(decs), body_(body) {}
   ~LetExp() override;
 
   void Print(FILE *out, int d) const override;
@@ -409,7 +416,7 @@ public:
   Exp *size_, *init_;
 
   ArrayExp(int pos, sym::Symbol *typ, Exp *size, Exp *init)
-      : Exp(pos), typ_(typ), size_(size), init_(init) {}
+      : Exp(ARRAY, pos), typ_(typ), size_(size), init_(init) {}
   ~ArrayExp() override;
 
   void Print(FILE *out, int d) const override;
@@ -423,7 +430,7 @@ public:
 
 class VoidExp : public Exp {
 public:
-  explicit VoidExp(int pos) : Exp(pos) {}
+  explicit VoidExp(int pos) : Exp(VOID, pos) {}
   ~VoidExp() override;
 
   void Print(FILE *out, int d) const override;
@@ -451,8 +458,11 @@ public:
                              err::ErrorMsg *errormsg) const = 0;
   virtual void Traverse(esc::EscEnvPtr env, int depth) = 0;
 
+  enum Kind {FUNCTION = 0, VAR, TYPE};
+  Kind kind_;
+
 protected:
-  explicit Dec(int pos) : pos_(pos) {}
+  explicit Dec(Kind kind, int pos) : kind_(kind), pos_(pos) {}
 };
 
 class FunctionDec : public Dec {
@@ -460,7 +470,7 @@ public:
   FunDecList *functions_;
 
   FunctionDec(int pos, FunDecList *functions)
-      : Dec(pos), functions_(functions) {}
+      : Dec(FUNCTION, pos), functions_(functions) {}
   ~FunctionDec() override;
 
   void Print(FILE *out, int d) const override;
@@ -480,7 +490,7 @@ public:
   bool escape_;
 
   VarDec(int pos, sym::Symbol *var, sym::Symbol *typ, Exp *init)
-      : Dec(pos), var_(var), typ_(typ), init_(init), escape_(true) {}
+      : Dec(VAR, pos), var_(var), typ_(typ), init_(init), escape_(true) {}
   ~VarDec() override;
 
   void Print(FILE *out, int d) const override;
@@ -496,7 +506,7 @@ class TypeDec : public Dec {
 public:
   NameAndTyList *types_;
 
-  TypeDec(int pos, NameAndTyList *types) : Dec(pos), types_(types) {}
+  TypeDec(int pos, NameAndTyList *types) : Dec(TYPE, pos), types_(types) {}
   ~TypeDec() override;
 
   void Print(FILE *out, int d) const override;
@@ -522,15 +532,18 @@ public:
   virtual type::Ty *Translate(env::TEnvPtr tenv,
                               err::ErrorMsg *errormsg) const = 0;
 
+  enum Kind {NAME, RECORD, ARRAY};
+  Kind kind_;
+
 protected:
-  explicit Ty(int pos) : pos_(pos) {}
+  explicit Ty(Kind kind, int pos) : kind_(kind), pos_(pos) {}
 };
 
 class NameTy : public Ty {
 public:
   sym::Symbol *name_;
 
-  NameTy(int pos, sym::Symbol *name) : Ty(pos), name_(name) {}
+  NameTy(int pos, sym::Symbol *name) : Ty(NAME, pos), name_(name) {}
   ~NameTy() override;
 
   void Print(FILE *out, int d) const override;
@@ -544,7 +557,7 @@ class RecordTy : public Ty {
 public:
   FieldList *record_;
 
-  RecordTy(int pos, FieldList *record) : Ty(pos), record_(record) {}
+  RecordTy(int pos, FieldList *record) : Ty(RECORD, pos), record_(record) {}
   ~RecordTy() override;
 
   void Print(FILE *out, int d) const override;
@@ -558,7 +571,7 @@ class ArrayTy : public Ty {
 public:
   sym::Symbol *array_;
 
-  ArrayTy(int pos, sym::Symbol *array) : Ty(pos), array_(array) {}
+  ArrayTy(int pos, sym::Symbol *array) : Ty(ARRAY, pos), array_(array) {}
   ~ArrayTy() override;
 
   void Print(FILE *out, int d) const override;

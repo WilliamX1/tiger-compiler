@@ -31,36 +31,12 @@ public:
   frame::Frame *frame_;
   Level *parent_;
 
-  Level(frame::Frame *frame, Level *parent) : frame_(frame), parent_(parent) {}
-  std::list<tr::Access *> *Formals() {
-    auto facc_list = frame_->Formals();
-    auto tracc_list = new std::list<tr::Access *>();
-
-    for (auto facc : *facc_list)
-      tracc_list->push_back(new tr::Access(this, facc));
-
-    return tracc_list;
-  }
-
-  static Level *NewLevel(Level *parent, temp::Label *name,
-                         std::list<bool> formals) {
-    // Create new frame and manage static link by insert a TRUE into boollist
-    formals.push_back(true);
-    return new Level(frame::NewFrame(name, formals), parent);
-  }
+  /* TODO: Put your lab5 code here */
 };
 
 class ProgTr {
 public:
-  ProgTr(std::unique_ptr<absyn::AbsynTree> absyn_tree,
-         std::unique_ptr<err::ErrorMsg> errormsg)
-      : absyn_tree_(std::move(absyn_tree)), errormsg_(std::move(errormsg)),
-        main_level_(std::make_unique<Level>(
-            frame::NewFrame(temp::LabelFactory::NamedLabel("tigermain"),
-                            std::list<bool>()),
-            nullptr)),
-        tenv_(std::make_unique<env::TEnv>()),
-        venv_(std::make_unique<env::VEnv>()) {}
+  // TODO: Put your lab5 code here */
 
   /**
    * Translate IR tree

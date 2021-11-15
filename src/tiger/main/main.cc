@@ -5,12 +5,16 @@
 #include "tiger/output/output.h"
 #include "tiger/parse/parser.h"
 #include "tiger/translate/translate.h"
+#include "tiger/semant/semant.h"
+
+frame::RegManager *reg_manager;
+frame::Frags *frags;
 
 int main(int argc, char **argv) {
   std::string_view fname;
   std::unique_ptr<absyn::AbsynTree> absyn_tree;
-  std::unique_ptr<frame::RegManager> reg_manager(new frame::X64RegManager());
-  std::list<std::unique_ptr<frame::Frag>> frags;
+  reg_manager = new frame::X64RegManager();
+  frags = new frame::Frags();
 
   if (argc < 2) {
     fprintf(stderr, "usage: tiger-compiler file.tig\n");
@@ -32,7 +36,16 @@ int main(int argc, char **argv) {
     }
 
     {
-      // Lab 6: escape analysis
+      // Lab 4: semantic analysis
+      TigerLog("-------====Semantic analysis=====-----\n");
+      sem::ProgSem prog_sem(std::move(absyn_tree), std::move(errormsg));
+      prog_sem.SemAnalyze();
+      absyn_tree = prog_sem.TransferAbsynTree();
+      errormsg = prog_sem.TransferErrormsg();
+    }
+
+    {
+      // Lab 5: escape analysis
       TigerLog("-------====Escape analysis=====-----\n");
       esc::EscFinder esc_finder(std::move(absyn_tree));
       esc_finder.FindEscape();
@@ -42,12 +55,9 @@ int main(int argc, char **argv) {
     {
       // Lab 5: translate IR tree
       TigerLog("-------====Translate=====-----\n");
-      tr::ProgTr prog_tr(std::move(absyn_tree), std::move(errormsg),
-                         std::move(reg_manager));
+      tr::ProgTr prog_tr(std::move(absyn_tree), std::move(errormsg));
       prog_tr.Translate();
-      frags = prog_tr.TransferFrags();
       errormsg = prog_tr.TransferErrormsg();
-      reg_manager = prog_tr.TransferRegManager();
     }
 
     if (errormsg->AnyErrors())
@@ -56,7 +66,7 @@ int main(int argc, char **argv) {
 
   {
     // Output assembly
-    output::AssemGen assem_gen(fname, std::move(frags), std::move(reg_manager));
+    output::AssemGen assem_gen(fname);
     assem_gen.GenAssem(true);
   }
 

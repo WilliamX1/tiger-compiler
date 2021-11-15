@@ -1,5 +1,5 @@
-#ifndef TIGER_SEMANT_SEMANT_H_
-#define TIGER_SEMANT_SEMANT_H_
+#ifndef TIGER_TRANSLATE_TRANSLATE_H_
+#define TIGER_TRANSLATE_TRANSLATE_H_
 
 #include <list>
 #include <memory>
@@ -7,23 +7,40 @@
 #include "tiger/absyn/absyn.h"
 #include "tiger/env/env.h"
 #include "tiger/errormsg/errormsg.h"
+#include "tiger/frame/frame.h"
 #include "tiger/semant/types.h"
 
-namespace sem {
+namespace tr {
 
-//lab4 only
-class ProgSem {
+class Exp;
+class ExpAndTy;
+class Level;
+
+class Access {
 public:
-  ProgSem(std::unique_ptr<absyn::AbsynTree> absyn_tree,
-         std::unique_ptr<err::ErrorMsg> errormsg)
-      : absyn_tree_(std::move(absyn_tree)), errormsg_(std::move(errormsg)),
-        tenv_(std::make_unique<env::TEnv>()),
-        venv_(std::make_unique<env::VEnv>()) {}
+  Level *level_;
+  frame::Access *access_;
 
+  Access(Level *level, frame::Access *access)
+      : level_(level), access_(access) {}
+  static Access *AllocLocal(Level *level, bool escape);
+};
+
+class Level {
+public:
+  frame::Frame *frame_;
+  Level *parent_;
+
+  /* TODO: Put your lab5 code here */
+};
+
+class ProgTr {
+public:
+  /* TODO: Put your lab5 code here */ 
   /**
-   * Semantic analysis
+   * Translate IR tree
    */
-  void SemAnalyze();
+  void Translate();
 
   /**
    * Transfer the ownership of errormsg to outer scope
@@ -33,18 +50,11 @@ public:
     return std::move(errormsg_);
   }
 
-  /**
-   * Transfer the ownership of absyn tree to outer scope
-   * @return unique pointer to the absyn tree
-   */
-  std::unique_ptr<absyn::AbsynTree> TransferAbsynTree() {
-    return std::move(absyn_tree_);
-  }
 
 private:
   std::unique_ptr<absyn::AbsynTree> absyn_tree_;
   std::unique_ptr<err::ErrorMsg> errormsg_;
-  
+  std::unique_ptr<Level> main_level_;
   std::unique_ptr<env::TEnv> tenv_;
   std::unique_ptr<env::VEnv> venv_;
 
@@ -53,6 +63,6 @@ private:
   void FillBaseTEnv();
 };
 
-} // namespace sem
+} // namespace tr
 
 #endif

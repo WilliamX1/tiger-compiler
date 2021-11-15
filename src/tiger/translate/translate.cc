@@ -100,20 +100,6 @@ void ProgTr::Translate() {
 
 } // namespace tr
 
-namespace {
-
-/**
- * Wrapper for `ProcExitEntry1`, which deals with the return value of the
- * function body
- * @param level current level
- * @param body function body
- * @return statements after `ProcExitEntry1`
- */
-frame::ProcFrag *ProcEntryExit(tr::Level *level, tr::Exp *body) {
-  /* TODO: Put your lab5 code here */
-}
-} // namespace
-
 namespace absyn {
 
 tr::ExpAndTy *AbsynTree::Translate(env::VEnvPtr venv, env::TEnvPtr tenv,

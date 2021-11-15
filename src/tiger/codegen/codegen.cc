@@ -27,7 +27,6 @@ void AssemInstr::Print(FILE *out, temp::Map *map) const {
 
 namespace tree {
 /* TODO: Put your lab5 code here */
-}
 
 void SeqStm::Munch(assem::InstrList &instr_list, std::string_view fs) {
   /* TODO: Put your lab5 code here */
@@ -78,6 +77,10 @@ temp::Temp *ConstExp::Munch(assem::InstrList &instr_list, std::string_view fs) {
 }
 
 temp::Temp *CallExp::Munch(assem::InstrList &instr_list, std::string_view fs) {
+  /* TODO: Put your lab5 code here */
+}
+
+temp::TempList *ExpList::MunchArgs(assem::InstrList &instr_list, std::string_view fs) {
   /* TODO: Put your lab5 code here */
 }
 

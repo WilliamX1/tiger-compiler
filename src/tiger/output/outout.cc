@@ -74,33 +74,23 @@ void ProcFrag::OutputAssem(FILE *out, OutputPhase phase, bool need_ra) const {
   }
 
   assem::InstrList *il = assem_instr.get()->GetInstrList();
+
+  // TigerLog("-------====Output assembly for %s=====-----\n",
+  //          frame_->name_->Name().data());
+
+  // assem::Proc *proc = frame::ProcEntryExit3(frame_, il);
   
-//   if (need_ra) {
-//     // Lab 6: register allocation
-//     TigerLog("----====Register allocate====-----\n");
-//     ra::RegAllocator reg_allocator(frame_, std::move(assem_instr));
-//     reg_allocator.RegAlloc();
-//     allocation = reg_allocator.TransferResult();
-//     il = allocation->il_;
-//     color = temp::Map::LayerMap(reg_manager->temp_map_, allocation->coloring_);
-//   }
+  // std::string proc_name = frame_->GetLabel();
 
-  TigerLog("-------====Output assembly for %s=====-----\n",
-           frame_->name_->Name().data());
-
-  assem::Proc *proc = frame::ProcEntryExit3(frame_, il);
-  
-  std::string proc_name = frame_->GetLabel();
-
-  fprintf(out, ".globl %s\n", proc_name.data());
-  fprintf(out, ".type %s, @function\n", proc_name.data());
-  // prologue
-  fprintf(out, "%s", proc->prolog_.data());
-  // body
-  proc->body_->Print(out, color);
-  // epilog_
-  fprintf(out, "%s", proc->epilog_.data());
-  fprintf(out, ".size %s, .-%s\n", proc_name.data(), proc_name.data());
+  // fprintf(out, ".globl %s\n", proc_name.data());
+  // fprintf(out, ".type %s, @function\n", proc_name.data());
+  // // prologue
+  // fprintf(out, "%s", proc->prolog_.data());
+  // // body
+  // proc->body_->Print(out, color);
+  // // epilog_
+  // fprintf(out, "%s", proc->epilog_.data());
+  // fprintf(out, ".size %s, .-%s\n", proc_name.data(), proc_name.data());
 }
 
 void StringFrag::OutputAssem(FILE *out, OutputPhase phase, bool need_ra) const {

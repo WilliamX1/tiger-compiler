@@ -10,6 +10,9 @@
 frame::RegManager *reg_manager;
 frame::Frags *frags;
 
+frame::RegManager *reg_manager;
+frame::Frags *frags;
+
 int main(int argc, char **argv) {
   std::string_view fname;
   std::unique_ptr<absyn::AbsynTree> absyn_tree;

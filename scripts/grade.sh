@@ -133,6 +133,32 @@ test_lab4() {
   echo "${score_str}: 100"
 }
 
+test_lab5_part1() {
+  local score_str="LAB5 part 1 SCORE"
+  local testcase_dir=${WORKDIR}/testdata/lab5or6/testcases
+  local ref_dir=${WORKDIR}/testdata/lab5or6/refs-part1
+  local testcase_name
+
+  build test_translate
+  for testcase in "$testcase_dir"/*.tig; do
+    testcase_name=$(basename "$testcase" | cut -f1 -d".")
+    local ref=${ref_dir}/${testcase_name}.out
+
+    ./test_translate "$testcase" >&/tmp/output.txt
+
+    # Check output
+    diff /tmp/output.txt "${ref}"
+    if [[ $? != 0 ]]; then
+      echo "Error: Output mismatch [$testcase_name]"
+      echo "${score_str}: 0"
+      exit 1
+    fi
+  done
+
+  echo "[^_^]: Pass"
+  echo "${score_str}: 100"
+}
+
 test_lab5() {
   local score_str="LAB5 SCORE"
   local main_script=${WORKDIR}/scripts/lab5_test/main.py
@@ -274,6 +300,9 @@ main() {
   elif [[ $scope == "lab4" ]]; then
     echo "========== Lab4 Test =========="
     test_lab4
+  elif [[ $scope == "lab5-part1" ]]; then
+    echo "========== Lab5 part-1 Test =========="
+    test_lab5_part1
   elif [[ $scope == "lab5" ]]; then
     echo "========== Lab5 Test =========="
     test_lab5
@@ -289,15 +318,17 @@ main() {
     test_lab3
     echo "========== Lab4 Test =========="
     test_lab4
+    echo "========== Lab5 part-1 Test =========="
+    test_lab5_part1
     echo "========== Lab5 Test =========="
     test_lab5
     echo "========== Lab6 Test =========="
     test_lab6
   else
     echo "Wrong test scope: Please specify the part you want to test"
-    echo -e "\tscripts/grade.sh [lab1|lab2|lab3|lab4|lab5|lab6|all]"
+    echo -e "\tscripts/grade.sh [lab1|lab2|lab3|lab4|lab5-part1|lab5|lab6|all]"
     echo -e "or"
-    echo -e "\tmake [gradelab1|gradelab2|gradelab3|gradelab4|gradelab5|gradelab6|gradeall]"
+    echo -e "\tmake [gradelab1|gradelab2|gradelab3|gradelab4|gradelab5|gradelab5-1|gradelab6|gradeall]"
   fi
 }
 

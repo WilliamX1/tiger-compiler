@@ -11,7 +11,6 @@
 extern frame::Frags *frags;
 extern frame::RegManager *reg_manager;
 
-
 namespace tr {
 
 Access *Access::AllocLocal(Level *level, bool escape) {

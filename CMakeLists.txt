@@ -29,15 +29,13 @@ file(GLOB TIGER_SOURCES
         "src/tiger/absyn/*.cc"
         "src/tiger/errormsg/*.cc"
         "src/tiger/env/*.cc"
-#        "src/tiger/escape/*.cc"
+        "src/tiger/escape/*.cc"
         "src/tiger/semant/*.cc"
-#        "src/tiger/frame/*.cc"
-#        "src/tiger/translate/*.cc"
-#        "src/tiger/canon/*.cc"
-#        "src/tiger/codegen/*.cc"
-#        "src/tiger/liveness/*.cc"
-#        "src/tiger/regalloc/*.cc"
-#        "src/tiger/output/*.cc"
+        "src/tiger/frame/*.cc"
+        "src/tiger/translate/*.cc"
+        "src/tiger/canon/*.cc"
+        "src/tiger/codegen/*.cc"
+        "src/tiger/output/*.cc"
         )
 
 SET(TIGER_LEX_PARSE_SOURCES
@@ -85,11 +83,15 @@ add_dependencies(test_parse lex_parse_sources)
 # lab 4
 add_executable(test_semant "src/tiger/main/test_semant.cc" ${TIGER_SOURCES} ${TIGER_LEX_PARSE_SOURCES})
 add_dependencies(test_semant lex_parse_sources)
- 
-# # lab 5
-# add_executable(test_codegen "src/tiger/main/test_codegen.cc" ${TIGER_SOURCES} ${TIGER_LEX_PARSE_SOURCES})
-# add_dependencies(test_codegen lex_parse_sources)
-# 
-# # lab 6
+
+# lab5 part 1
+add_executable(test_translate "src/tiger/main/test_translate.cc" ${TIGER_SOURCES} ${TIGER_LEX_PARSE_SOURCES})
+add_dependencies(test_translate lex_parse_sources)
+
+# lab 5 part 2
+add_executable(test_codegen "src/tiger/main/test_codegen.cc" ${TIGER_SOURCES} ${TIGER_LEX_PARSE_SOURCES})
+add_dependencies(test_codegen lex_parse_sources)
+
+# lab 6
 # add_executable(tiger-compiler "src/tiger/main/main.cc" ${TIGER_SOURCES} ${TIGER_LEX_PARSE_SOURCES})
 # add_dependencies(tiger-compiler lex_parse_sources)

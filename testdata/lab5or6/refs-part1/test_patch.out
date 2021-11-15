@@ -2,7 +2,7 @@
   decList(
    functionDec(
     fundecList(
-     fundec(g,
+     fundec(patchtest,
       fieldList(
        field(a,
         int,
@@ -104,7 +104,7 @@
      expList(
       callExp(printi,
        expList(
-        callExp(g,
+        callExp(patchtest,
          expList(
           intExp(9),
           expList(
@@ -132,7 +132,7 @@
        expList(
         callExp(printi,
          expList(
-          callExp(g,
+          callExp(patchtest,
            expList(
             intExp(4),
             expList(

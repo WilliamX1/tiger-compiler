@@ -72,6 +72,19 @@ private:
   std::list<Temp *> temp_list_;
 };
 
+class LabelList {
+public:
+  explicit LabelList(Label* t) : label_list_({t}) {};
+  LabelList(std::initializer_list<Label *> list) : label_list_(list) {};
+  LabelList() = default;
+  void Append(Label* t) { label_list_.push_back(t); };
+  [[nodiscard]] Label* NthLabel(int i) const;
+  [[nodiscard]] const std::list<Label*> &GetList() const { return label_list_; };
+
+private:
+  std::list<Label*> label_list_; 
+};
+
 } // namespace temp
 
 #endif

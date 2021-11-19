@@ -606,6 +606,10 @@ public:
     field_list_.push_front(field);
     return this;
   }
+  FieldList *Append(Field *field) {
+    field_list_.push_back(field);
+    return this;
+  }
   [[nodiscard]] const std::list<Field *> &GetList() const {
     return field_list_;
   }
@@ -626,6 +630,10 @@ public:
 
   ExpList *Prepend(Exp *exp) {
     exp_list_.push_front(exp);
+    return this;
+  }
+  ExpList *Append(Exp *exp) {
+    exp_list_.push_back(exp);
     return this;
   }
   [[nodiscard]] const std::list<Exp *> &GetList() const { return exp_list_; }
@@ -662,6 +670,10 @@ public:
     fun_dec_list_.push_front(fun_dec);
     return this;
   }
+  FunDecList *Append(FunDec *fun_dec) {
+    fun_dec_list_.push_back(fun_dec);
+    return this;
+  }
   [[nodiscard]] const std::list<FunDec *> &GetList() const {
     return fun_dec_list_;
   }
@@ -678,6 +690,10 @@ public:
 
   DecList *Prepend(Dec *dec) {
     dec_list_.push_front(dec);
+    return this;
+  }
+  DecList *Append(Dec* dec) {
+    dec_list_.push_back(dec);
     return this;
   }
   [[nodiscard]] const std::list<Dec *> &GetList() const { return dec_list_; }

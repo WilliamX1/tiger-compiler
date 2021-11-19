@@ -72,10 +72,39 @@ public:
   
   virtual ~Access() = default;
   
+public:
+  enum Kind {INFRAME, INREG};
+
+  Kind kind_;
+
+  Access(Kind kind_) : kind_(kind_) {};
+
+  virtual tree::Exp* ToExp(tree::Exp* framePtr) const = 0;
+};
+
+class AccessList {
+public:
+  AccessList() = default;
+  void PushBack(Access* access) { access_list_.push_back(access); };
+  const std::list<Access *> &GetList() const { return access_list_; };
+
+private:
+  std::list<Access *> access_list_;
 };
 
 class Frame {
   /* TODO: Put your lab5 code here */
+public:
+  temp::Label* label;
+  AccessList* formals;
+  int s_offset;
+
+  Frame(temp::Label* name, std::list<bool> escapes) : label(name) {};
+  virtual Access *allocLocal(bool escape) = 0;
+  virtual tree::Exp* externalCall(std::string s, tree::ExpList* args) = 0;
+  // virtual tree::Stm* procEntryExit1(Frame* frame, tree::Stm* stm) = 0;
+  // virtual assem::InstrList* procEntryExit2(assem::InstrList* ilist) = 0;
+  // virtual assem::Proc* procEntryExit3(Frame* frame, assem::InstrList* ilist) = 0;
 };
 
 /**
@@ -85,6 +114,13 @@ class Frame {
 class Frag {
 public:
   virtual ~Frag() = default;
+
+public:
+  enum Kind { STRING, PROC };
+  
+  Kind kind_;
+
+  Frag(Kind kind_) : kind_(kind_) {};
 };
 
 class StringFrag : public Frag {
@@ -93,7 +129,7 @@ public:
   std::string str_;
 
   StringFrag(temp::Label *label, std::string str)
-      : label_(label), str_(std::move(str)) {}
+      : Frag(STRING), label_(label), str_(std::move(str)) {}
 };
 
 class ProcFrag : public Frag {
@@ -101,7 +137,8 @@ public:
   tree::Stm *body_;
   Frame *frame_;
 
-  ProcFrag(tree::Stm *body, Frame *frame) : body_(body), frame_(frame) {}
+  ProcFrag(tree::Stm *body, Frame *frame) 
+  : Frag(PROC), body_(body), frame_(frame) {}
 };
 
 class Frags {
@@ -115,6 +152,10 @@ private:
 };
 
 /* TODO: Put your lab5 code here */
+// tree::Exp* externalCall(std::string s, tree::ExpList* args);
+// tree::Stm* F_procEntryExit1(Frame* frame, tree::Stm* stm);
+// assem::InstrList* F_procEntryExit2(assem::InstrList* ilist);
+// assem::Proc* F_procEntryExit3(Frame* frame, assem::InstrList* ilist);
 
 } // namespace frame
 

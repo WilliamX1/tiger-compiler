@@ -16,84 +16,13 @@ class Canon;
 } // namespace canon
 
 namespace assem {
-class Targets {
-public:
-  Targets(temp::LabelList* labels_) : labels_(labels_) {}; 
-
-private:
-  temp::LabelList* labels_;
-};
-
-class Instr {
-public:
-  enum Kind { OPER, LABEL, MOVE };
-
-  Kind kind_;
-
-  Instr(Kind kind_) : kind_(kind_) {};
-
-  virtual void Print(FILE* out, temp::Map* m) const = 0;
-
-  virtual ~Instr() {};
-};
-
-class OperInstr : public Instr {
-public:
-  std::string assem_;
-  temp::TempList* dst_, *src_;
-  Targets* jumps_;
-
-  OperInstr(std::string assem_, temp::TempList* dst_, temp::TempList* src_, Targets* jumps_)
-  : Instr(OPER), assem_(assem_), dst_(dst_), src_(src_), jumps_(jumps_) {};
-
-  void Print(FILE* out, temp::Map* m) const override;
-};
-
-class LabelList : public Instr {
-public:
-  std::string assem_;
-  temp::Label* label_;
-
-  LabelList(std::string assem_, temp::Label* label_)
-  : Instr(LABEL), assem_(assem_), label_(label_) {};
-
-  void Print(FILE* out, temp::Map* m) const override;
-};
-
-class MoveInstr : public Instr {
-public:
-  std::string assem_;
-  temp::TempList* dst_, *src_;
-
-  MoveInstr(std::string assem_, temp::TempList* dst_, temp::TempList* src_)
-  : Instr(MOVE), assem_(assem_), dst_(dst_), src_(src_) {};
-
-  void Print(FILE* out, temp::Map* m) const override;
-};
-
-class InstrList {
-public:
-  explicit InstrList(Instr* i) : instr_list_({i}) {};
-  InstrList(std::initializer_list<Instr*> list_) : instr_list_(list_) {};
-  InstrList() = default;
-  ~InstrList() {};
-  void Append(Instr* i) { instr_list_.push_back(i); };
-  [[nodiscard]] const std::list<Instr*> &GetList() const { return instr_list_; };
-
-private:
-  std::list<Instr*> instr_list_;
-};
-
-class Proc {
-public:
-  std::string prolog_;
-  InstrList* body_;
-  std::string epilog_;
-
-  Proc(std::string prolog_, InstrList* body, std::string epilog_)
-  : prolog_(prolog_), body_(body_), epilog_(epilog_) {};
-};
-
+class Targets;
+class Instr;
+class OperInstr;
+class LabelInstr;
+class MoveInstr;
+class InstrList;
+class Proc;
 } // namespace assem
 
 namespace frame {
@@ -181,9 +110,9 @@ public:
 class JumpStm : public Stm {
 public:
   NameExp *exp_;
-  temp::LabelList *jumps_;
+  std::vector<temp::Label* > *jumps_;
 
-  JumpStm(NameExp *exp, temp::LabelList *jumps)
+  explicit JumpStm(NameExp *exp, std::vector<temp::Label* > *jumps)
       : exp_(exp), jumps_(jumps) {}
   ~JumpStm() override;
 

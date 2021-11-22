@@ -66,5 +66,35 @@ private:
             *r13, *r14, *r15, *rsp;
 };
 
+class InFrameAccess : public Access {
+public:
+  int offset;
+
+  InFrameAccess(int offset) : Access(INFRAME), offset(offset) { assert(offset < 0); };
+  tree::Exp* ToExp(tree::Exp* framPtr) const { return tree::NewMemPlus_Const(framPtr, offset); };
+};
+
+class InRegAccess : public Access {
+public:
+  temp::Temp* reg;
+
+  InRegAccess(temp::Temp* reg) : Access(INREG), reg(reg) {};
+  tree::Exp* ToExp(tree::Exp* framePtr) const { return new tree::TempExp(reg); };
+};
+
+class X64Frame : public Frame {
+  /* TODO: Put your lab5 code here */
+public:
+  X64Frame(temp::Label* name, std::list<bool> escapes) : Frame(name, escapes) {
+    this->s_offset = -8;
+    this->formals = new AccessList();
+
+    for (auto ele : escapes) {
+      this->formals->PushBack(allocLocal(ele));
+    }
+  };
+  Access* allocLocal(bool escape) override;
+};
+
 } // namespace frame
 #endif // TIGER_COMPILER_X64FRAME_H

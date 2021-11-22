@@ -5,42 +5,6 @@ extern frame::RegManager *reg_manager;
 namespace frame {
 
 /* TODO: Put your lab5 code here */
-class InFrameAccess : public Access {
-public:
-  int offset;
-
-  InFrameAccess(int offset) : Access(INFRAME), offset(offset) { assert(offset < 0); };
-  tree::Exp* ToExp(tree::Exp* framPtr) const { return tree::NewMemPlus_Const(framPtr, offset); };
-};
-
-class InRegAccess : public Access {
-public:
-  temp::Temp* reg;
-
-  InRegAccess(temp::Temp* reg) : Access(INREG), reg(reg) {};
-  tree::Exp* ToExp(tree::Exp* framePtr) const { return new tree::TempExp(reg); };
-};
-
-class X64Frame : public Frame {
-  /* TODO: Put your lab5 code here */
-public:
-  X64Frame(temp::Label* name, std::list<bool> escapes) : Frame(name, escapes) {
-    this->s_offset = -8;
-    this->formals = new AccessList();
-
-    for (auto ele : escapes) {
-      this->formals->PushBack(allocLocal(ele));
-    }
-    reg_manager_ = new frame::X64RegManager();
-  };
-  Access* allocLocal(bool escape);
-  tree::Exp* externalCall(std::string s, tree::ExpList* args);
-  // tree::Stm* procEntryExit1(Frame* frame, tree::Stm* stm);
-  // assem::InstrList* procEntryExit2(assem::InstrList* ilist);
-  // assem::Proc* procEntryExit3(Frame* frame, assem::InstrList* ilist);
-private:
-  frame::X64RegManager* reg_manager_;
-};
 
 /* TODO: Put your lab5 code here */
 
@@ -52,53 +16,54 @@ Access* X64Frame::allocLocal(bool escape) {
   } else {
     local = new InRegAccess(temp::TempFactory::NewTemp());
   }
+  
   return local;
 };
 
-tree::Exp* X64Frame::externalCall(std::string s, tree::ExpList* args) {
+tree::Exp* externalCall(std::string s, tree::ExpList* args) {
   return new tree::CallExp(new tree::NameExp(temp::LabelFactory::NamedLabel(s)), args);
 };
 
-// tree::Stm* X64Frame::procEntryExit1(Frame* frame, tree::Stm* stm) {
-//   int num = 1;
+tree::Stm* procEntryExit1(Frame* frame, tree::Stm* stm) {
+  int num = 1;
 
-//   tree::Stm* viewshift = new tree::ExpStm(new tree::ConstExp(0));
+  tree::Stm* viewshift = new tree::ExpStm(new tree::ConstExp(0));
   
-//   auto formal_list = frame->formals->GetList();
+  auto formal_list = frame->formals->GetList();
 
-//   for (auto ele : formal_list) {
-//     if (reg_manager_->GetNthReg(num));
-//       viewshift = new tree::SeqStm(viewshift, new tree::MoveStm(ele->ToExp(new tree::TempExp(reg_manager_->FramePointer())), new tree::TempExp(reg_manager_->GetNthArg(num))));
-//     num++;
-//   };
-//   return new tree::SeqStm(viewshift, stm);
-// };
+  for (auto ele : formal_list) {
+    if (reg_manager->GetNthReg(num));
+      viewshift = new tree::SeqStm(viewshift, new tree::MoveStm(ele->ToExp(new tree::TempExp(reg_manager->FramePointer())), new tree::TempExp(reg_manager->GetNthArg(num))));
+    num++;
+  };
+  return new tree::SeqStm(viewshift, stm);
+};
 
-// assem::InstrList* X64Frame::procEntryExit2(assem::InstrList* body) {
-//   static temp::TempList* retlist = NULL;
-//   if (!retlist)
-//     retlist = new temp::TempList(reg_manager_->ReturnValue());
-//   auto ele = new assem::OperInstr("", NULL, retlist, new assem::Targets(NULL));
-//   body->Append(ele);
-//   return body;
-// };
+assem::InstrList* procEntryExit2(assem::InstrList* body) {
+  static temp::TempList* retlist = NULL;
+  if (!retlist)
+    retlist = new temp::TempList(reg_manager->ReturnValue());
+  // assem::OperInstr* ele = new assem::OperInstr("", NULL, retlist, new assem::Targets(NULL));
+  // body->Append(ele);
+  return body;
+};
 
-// assem::Proc* F_procEntryExit3(frame::Frame* frame, assem::InstrList* body) {
-//   static char instr[256];
+assem::Proc* procEntryExit3(frame::Frame* frame, assem::InstrList* body) {
+  static char instr[256];
 
-//   std::string prolog;
-//   sprintf(instr, ".set %s_framesize, %d\n", frame->label->Name().c_str(), -frame->s_offset);
-//   prolog = std::string(instr);
-//   sprintf(instr, "%s:\n", frame->label->Name(). c_str());
-//   prolog.append(std::string(instr));
-//   sprintf(instr, "\tsubq $%s_framesize, %%rsp\n", frame->label->Name().c_str());
-//   prolog.append(std::string(instr));
+  std::string prolog;
+  sprintf(instr, ".set %s_framesize, %d\n", frame->label->Name().c_str(), -frame->s_offset);
+  prolog = std::string(instr);
+  sprintf(instr, "%s:\n", frame->label->Name(). c_str());
+  prolog.append(std::string(instr));
+  sprintf(instr, "\tsubq $%s_framesize, %%rsp\n", frame->label->Name().c_str());
+  prolog.append(std::string(instr));
 
-//   sprintf(instr, "\taddq $%s_framesize, %%rsp\n", frame->label->Name().c_str());
-//   std::string epilog = std::string(instr);
-//   epilog.append(std::string("\tret\n"));
-//   return new assem::Proc(prolog, body, epilog);
-// };
+  sprintf(instr, "\taddq $%s_framesize, %%rsp\n", frame->label->Name().c_str());
+  std::string epilog = std::string(instr);
+  epilog.append(std::string("\tret\n"));
+  return new assem::Proc(prolog, body, epilog);
+};
 
 temp::TempList* X64RegManager::Registers() {
   static temp::TempList* templist = NULL;

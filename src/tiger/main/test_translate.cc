@@ -34,13 +34,13 @@ int main(int argc, char **argv) {
 
     {
       // Lab 5: escape analysis
-    //   TigerLog("-------====Escape analysis=====-----\n");
+      // TigerLog("-------====Escape analysis=====-----\n");
       esc::EscFinder esc_finder(std::move(absyn_tree));
       esc_finder.FindEscape();
       absyn_tree = esc_finder.TransferAbsynTree();
       absyn_tree->Print(stderr);
     }
-
+    
     {
       // Lab 5: translate IR tree
     //   TigerLog("-------====Translate=====-----\n");

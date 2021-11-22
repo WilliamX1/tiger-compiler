@@ -14,6 +14,8 @@ class RegManager {
 public:
   RegManager() : temp_map_(temp::Map::Empty()) {}
 
+  virtual ~RegManager() = default;
+
   temp::Temp *GetRegister(int regno) { return regs_[regno]; }
 
   /**
@@ -61,6 +63,9 @@ public:
 
   [[nodiscard]] virtual temp::Temp *ReturnValue() = 0;
 
+  [[nodiscard]] virtual temp::Temp* GetNthReg(int i) = 0;
+  [[nodiscard]] virtual temp::Temp* GetNthArg(int i) = 0;
+  
   temp::Map *temp_map_;
 protected:
   std::vector<temp::Temp *> regs_;
@@ -101,10 +106,8 @@ public:
 
   Frame(temp::Label* name, std::list<bool> escapes) : label(name) {};
   virtual Access *allocLocal(bool escape) = 0;
-  virtual tree::Exp* externalCall(std::string s, tree::ExpList* args) = 0;
-  // virtual tree::Stm* procEntryExit1(Frame* frame, tree::Stm* stm) = 0;
-  // virtual assem::InstrList* procEntryExit2(assem::InstrList* ilist) = 0;
-  // virtual assem::Proc* procEntryExit3(Frame* frame, assem::InstrList* ilist) = 0;
+
+  virtual ~Frame() = default;
 };
 
 /**
@@ -152,10 +155,10 @@ private:
 };
 
 /* TODO: Put your lab5 code here */
-// tree::Exp* externalCall(std::string s, tree::ExpList* args);
-// tree::Stm* F_procEntryExit1(Frame* frame, tree::Stm* stm);
-// assem::InstrList* F_procEntryExit2(assem::InstrList* ilist);
-// assem::Proc* F_procEntryExit3(Frame* frame, assem::InstrList* ilist);
+tree::Exp* externalCall(std::string s, tree::ExpList* args);
+tree::Stm* procEntryExit1(Frame* frame, tree::Stm* stm);
+assem::InstrList* procEntryExit2(assem::InstrList* ilist);
+assem::Proc* procEntryExit3(Frame* frame, assem::InstrList* ilist);
 
 } // namespace frame
 

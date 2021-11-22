@@ -33,6 +33,8 @@ public:
   Instr(Kind kind_) : kind_(kind_) {};
 
   virtual void Print(FILE* out, temp::Map* m) const = 0;
+
+  virtual ~Instr() {};
 };
 
 class OperInstr : public Instr {
@@ -74,6 +76,7 @@ public:
   explicit InstrList(Instr* i) : instr_list_({i}) {};
   InstrList(std::initializer_list<Instr*> list_) : instr_list_(list_) {};
   InstrList() = default;
+  ~InstrList() {};
   void Append(Instr* i) { instr_list_.push_back(i); };
   [[nodiscard]] const std::list<Instr*> &GetList() const { return instr_list_; };
 
@@ -300,6 +303,7 @@ public:
 class ExpList {
 public:
   ExpList() = default;
+  ExpList(Exp* exp) : exp_list_({exp}) {} 
   ExpList(std::initializer_list<Exp *> list) : exp_list_(list) {}
 
   void Append(Exp *exp) { exp_list_.push_back(exp); }

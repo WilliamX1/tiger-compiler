@@ -22,6 +22,19 @@
   #define LOG(format, args...) do{} while (0)
 #endif
 
+#define DEBUGLAB5
+
+#ifdef DEBUGLAB5
+  #define LOG5(format, args...) do {   \
+    FILE* debug_log = fopen("debug5.log", "a+");  \
+    fprintf(debug_log, "%d, %s: ", __LINE__, __func__); \
+    fprintf(debug_log, format, ##args); \
+    fclose(debug_log);\
+  } while (0)
+#else
+  #define LOG5(format, args...) do{} while (0)
+#endif
+
 extern frame::Frags *frags;
 extern frame::RegManager *reg_manager;
 
@@ -29,7 +42,9 @@ namespace tr {
 
 Access *Access::AllocLocal(Level *level, bool escape) {
   /* TODO: Put your lab5 code here */
-  return new Access(level, level->frame_->allocLocal(escape));
+  if (level == NULL) LOG5("level is NULL\n");
+  if (level->frame_ == NULL) LOG5("level-frame is NULL\n");
+  return new Access(level, level->frame_->allocLocal(escape)); 
 }
 
 class Cx {
@@ -57,6 +72,8 @@ public:
   [[nodiscard]] virtual tree::Exp *UnEx() const = 0;
   [[nodiscard]] virtual tree::Stm *UnNx() const = 0;
   [[nodiscard]] virtual Cx UnCx(err::ErrorMsg *errormsg) const = 0;
+
+  virtual ~Exp() = default;
 };
 
 class ExpAndTy {
@@ -150,6 +167,8 @@ public:
 
 void ProgTr::Translate() {
   /* TODO: Put your lab5 code here */
+  LOG("Start Translate IR tree (1/2)...\n");
+  absyn_tree_->Translate(venv_.get(), tenv_.get(), new tr::Level(new frame::X64Frame(temp::LabelFactory::NamedLabel("__tigermain__"), {}), nullptr), temp::LabelFactory::NamedLabel("__tigermain__"), errormsg_.get());
 }
 
 tree::Exp* StaticLink(tr::Level* target, tr::Level* level) {
@@ -169,12 +188,15 @@ tr::ExpAndTy *AbsynTree::Translate(env::VEnvPtr venv, env::TEnvPtr tenv,
                                    tr::Level *level, temp::Label *label,
                                    err::ErrorMsg *errormsg) const {
   /* TODO: Put your lab5 code here */
-  return Translate(venv, tenv, level, label, errormsg);
+  LOG("Start Translate IR tree(2/2)...\n");
+  LOG("root type : %d\n", root_->kind_);
+  return root_->Translate(venv, tenv, level, label, errormsg);
 }
 
 tr::Exp* TranslateSimpleVar(tr::Access* access, tr::Level* level) {
   tree::Exp* staticlink = tr::StaticLink(access->level_, level);
   staticlink = access->access_->ToExp(staticlink);
+
   return new tr::ExExp(staticlink);
 }
 
@@ -187,8 +209,8 @@ tr::ExpAndTy *SimpleVar::Translate(env::VEnvPtr venv, env::TEnvPtr tenv,
   type::Ty* ty = type::IntTy::Instance();
 
   env::EnvEntry* entry = venv->Look(sym_);
-  if (!entry || entry->kind_ != env::EnvEntry::VAR)
-    errormsg->Error(pos_, "undefined variable %s", sym_->Name().c_str());
+  if (!entry || entry->kind_ != env::EnvEntry::VAR) {}
+    //errormsg->Error(pos_, "undefined variable %s", sym_->Name().c_str());
   
   env::VarEntry* var_entry = (env::VarEntry*) entry;
   exp = TranslateSimpleVar(var_entry->access_, level);
@@ -206,7 +228,7 @@ tr::ExpAndTy *FieldVar::Translate(env::VEnvPtr venv, env::TEnvPtr tenv,
   type::Ty* actual_ty = check_var->ty_->ActualTy();
 
   if (actual_ty->kind_ != type::Ty::Kind::RECORD) {
-    errormsg->Error(pos_, "not a record type");
+    //errormsg->Error(pos_, "not a record type");
     return new tr::ExpAndTy(NULL, type::IntTy::Instance());
   } else {
     type::FieldList* fields = ((type::RecordTy*) actual_ty)->fields_;
@@ -225,7 +247,7 @@ tr::ExpAndTy *FieldVar::Translate(env::VEnvPtr venv, env::TEnvPtr tenv,
       order++;
     };
 
-    errormsg->Error(pos_, "field %s doesn't exist", sym_->Name().c_str());
+    //errormsg->Error(pos_, "field %s doesn't exist", sym_->Name().c_str());
     return new tr::ExpAndTy(NULL, type::IntTy::Instance());
   };
 }
@@ -238,14 +260,14 @@ tr::ExpAndTy *SubscriptVar::Translate(env::VEnvPtr venv, env::TEnvPtr tenv,
   tr::ExpAndTy* check_var = var_->Translate(venv, tenv, level, label, errormsg);
 
   if (check_var->ty_->ActualTy()->kind_ != type::Ty::Kind::ARRAY) {
-    errormsg->Error(pos_, "array type required");
+    //errormsg->Error(pos_, "array type required");
     return new tr::ExpAndTy(NULL, type::IntTy::Instance());
   };
 
   tr::ExpAndTy* check_subscript = subscript_->Translate(venv, tenv, level, label, errormsg);
 
   if (check_subscript->ty_->ActualTy()->kind_ != type::Ty::Kind::INT) {
-    errormsg->Error(pos_, "array index must be integer");
+    //errormsg->Error(pos_, "array index must be integer");
     return new tr::ExpAndTy(NULL, type::IntTy::Instance());
   };
 
@@ -311,13 +333,11 @@ tr::ExpAndTy *CallExp::Translate(env::VEnvPtr venv, env::TEnvPtr tenv,
   LOG("Translate CallExp level %s label %s\n", temp::LabelFactory::LabelString(level->frame_->label).c_str(), temp::LabelFactory::LabelString(label).c_str());                                                                    
   tr::Exp* exp = NULL;
   type::Ty* ty = type::VoidTy::Instance();
-
   env::EnvEntry* entry = venv->Look(func_);
   if (!entry || entry->kind_ != env::EnvEntry::Kind::FUN) {
-    errormsg->Error(pos_, "undefined function %s", func_->Name().c_str());
+    //errormsg->Error(pos_, "undefined function %s", func_->Name().c_str());
     return new tr::ExpAndTy(exp, ty);
   };
-
   env::FunEntry* fun_entry = (env::FunEntry*) entry;
   if (fun_entry->result_) ty = fun_entry->result_->ActualTy();
   else ty = type::VoidTy::Instance();
@@ -334,7 +354,7 @@ tr::ExpAndTy *CallExp::Translate(env::VEnvPtr venv, env::TEnvPtr tenv,
   while (size-- > 0) {
     tr::ExpAndTy* check_arg = (*arg_iter)->Translate(venv, tenv, level, label, errormsg);
     if (!check_arg->ty_->IsSameType(*formal_iter)) {
-      errormsg->Error(pos_, "para type mismatch");
+      //errormsg->Error(pos_, "para type mismatch");
       return new tr::ExpAndTy(exp, ty);
     };
     formal_iter++;
@@ -343,18 +363,21 @@ tr::ExpAndTy *CallExp::Translate(env::VEnvPtr venv, env::TEnvPtr tenv,
   };
 
   if (arg_size < formal_size) {
-    errormsg->Error(pos_, "too little params in function %s", func_->Name().c_str());
+    //errormsg->Error(pos_, "too little params in function %s", func_->Name().c_str());
     return new tr::ExpAndTy(exp, ty);
   };
   if (arg_size > formal_size) {
-    errormsg->Error(pos_, "too many params in function %s", func_->Name().c_str());
+    //errormsg->Error(pos_, "too many params in function %s", func_->Name().c_str());
     return new tr::ExpAndTy(exp, ty);
   };
 
-  // if (!fun_entry->level_->parent_) {}
-    // exp = new tr::ExExp(frame::externalCall(func_->Name(), list));
-  // else exp = new tr::ExExp(new tree::CallExp(new tree::NameExp(func_), new tree::ExpList(tr::StaticLink(fun_entry->level_->parent_, level), list)));
+  if (!fun_entry->level_->parent_)
+    exp = new tr::ExExp(frame::externalCall(func_->Name(), list));
+  else {
+    list->Append(tr::StaticLink(fun_entry->level_->parent_, level));
 
+    exp = new tr::ExExp(new tree::CallExp(new tree::NameExp(func_), list));
+  };
   return new tr::ExpAndTy(exp, ty);
 }
 
@@ -363,17 +386,16 @@ tr::ExpAndTy *OpExp::Translate(env::VEnvPtr venv, env::TEnvPtr tenv,
                                err::ErrorMsg *errormsg) const {
   LOG("Translate OpExp level %s label %s\n", temp::LabelFactory::LabelString(level->frame_->label).c_str(), temp::LabelFactory::LabelString(label).c_str());                              
   /* TODO: Put your lab5 code here */
+
   tr::ExpAndTy* check_left = left_->Translate(venv, tenv, level, label, errormsg);
   tr::ExpAndTy* check_right = right_->Translate(venv, tenv, level, label, errormsg);
-
   tree::CjumpStm *stm = NULL;
   tr::Exp* exp = NULL;
-
   switch (oper_) {
     case Oper::PLUS_OP: case Oper::MINUS_OP: case Oper::TIMES_OP: case Oper::DIVIDE_OP:
     {
-      if (check_left->ty_->kind_ != type::Ty::Kind::INT) errormsg->Error(left_->pos_, "integer required");
-      if (check_right->ty_->kind_ != type::Ty::Kind::INT) errormsg->Error(right_->pos_, "integer required");
+      if (check_left->ty_->kind_ != type::Ty::Kind::INT) {}//errormsg->Error(left_->pos_, "integer required");
+      if (check_right->ty_->kind_ != type::Ty::Kind::INT) {}//errormsg->Error(right_->pos_, "integer required");
       switch (oper_) {
         case Oper::PLUS_OP:
           exp = new tr::ExExp(new tree::BinopExp(tree::BinOp::PLUS_OP, check_left->exp_->UnEx(), check_right->exp_->UnEx()));
@@ -392,9 +414,9 @@ tr::ExpAndTy *OpExp::Translate(env::VEnvPtr venv, env::TEnvPtr tenv,
     }
     case Oper::LT_OP: case Oper::LE_OP: case Oper::GT_OP: case Oper::GE_OP:
     {
-      if (check_left->ty_->kind_ != type::Ty::Kind::INT && check_left->exp_->kind_ != type::Ty::Kind::STRING) errormsg->Error(left_->pos_, "integer or string required");
-      if (check_right->ty_->kind_ != type::Ty::Kind::INT && check_right->exp_->kind_ != type::Ty::Kind::STRING) errormsg->Error(right_->pos_, "integer or string required");
-      if (!check_left->ty_->IsSameType(check_right->ty_)) errormsg->Error(pos_, "same type required");
+      if (check_left->ty_->kind_ != type::Ty::Kind::INT && check_left->ty_->kind_ != type::Ty::Kind::STRING) //errormsg->Error(left_->pos_, "integer or string required");
+      if (check_right->ty_->kind_ != type::Ty::Kind::INT && check_right->ty_->kind_ != type::Ty::Kind::STRING) //errormsg->Error(right_->pos_, "integer or string required");
+      if (!check_left->ty_->IsSameType(check_right->ty_)) //errormsg->Error(pos_, "same type required");
       
       tree::CjumpStm* stm;
       switch (oper_) {
@@ -416,15 +438,16 @@ tr::ExpAndTy *OpExp::Translate(env::VEnvPtr venv, env::TEnvPtr tenv,
       temp::LabelList* falses = new temp::LabelList();
       falses->Append(stm->false_label_);
       exp = new tr::CxExp(trues, falses, stm);
+      break;
     }
     case Oper::EQ_OP: case Oper::NEQ_OP:
     {      
       tree::CjumpStm* stm;
       switch (oper_) {
         case Oper::EQ_OP:
-          // if (check_left->ty_->kind_ == type::Ty::STRING) 
-          // stm = new tree::CjumpStm(tree::EQ_OP, F::externalCall());
-          // else stm = new 
+          if (check_left->ty_->kind_ == type::Ty::STRING)
+            stm = new tree::CjumpStm(tree::EQ_OP, frame::externalCall("stringEqual", new tree::ExpList({check_left->exp_->UnEx(), check_right->exp_->UnEx()})), new tree::ConstExp(1), NULL, NULL);
+          else stm = new tree::CjumpStm(tree::RelOp::EQ_OP, check_left->exp_->UnEx(), check_right->exp_->UnEx(), NULL, NULL);
           break;
         case Oper::NEQ_OP:
           stm = new tree::CjumpStm(tree::RelOp::NE_OP, check_left->exp_->UnEx(), check_right->exp_->UnEx(), NULL, NULL);
@@ -455,13 +478,13 @@ tr::ExpAndTy *RecordExp::Translate(env::VEnvPtr venv, env::TEnvPtr tenv,
   tree::ExpList* tail = list;
   
   if (!ty) {
-    errormsg->Error(pos_, "undefined type %s", typ_->Name().c_str());
+    //errormsg->Error(pos_, "undefined type %s", typ_->Name().c_str());
     return new tr::ExpAndTy(NULL, type::IntTy::Instance());
   };
 
   ty = ty->ActualTy();
   if (ty->kind_ != type::Ty::Kind::RECORD) {
-    errormsg->Error(pos_, "not record type %s", typ_->Name().c_str());
+    //errormsg->Error(pos_, "not record type %s", typ_->Name().c_str());
     return new tr::ExpAndTy(NULL, ty);
   };
 
@@ -479,7 +502,7 @@ tr::ExpAndTy *RecordExp::Translate(env::VEnvPtr venv, env::TEnvPtr tenv,
     tr::ExpAndTy* check_exp = (*efields_iter)->exp_->Translate(venv, tenv, level, label, errormsg);
 
     if (!check_exp->ty_->IsSameType((*records_iter)->ty_)) {
-      errormsg->Error(pos_, "record type unmatched");
+      //errormsg->Error(pos_, "record type unmatched");
     };
 
     records_iter++;
@@ -490,18 +513,17 @@ tr::ExpAndTy *RecordExp::Translate(env::VEnvPtr venv, env::TEnvPtr tenv,
 
   temp::Temp* reg = temp::TempFactory::NewTemp();
 
-  // tree::Stm* stm = new tree::MoveStm(new tree::TempExp(reg), F::exter)
+  tree::Stm* stm = new tree::MoveStm(new tree::TempExp(reg), frame::externalCall("allocRecord", new tree::ExpList(new tree::ConstExp(count * frame::wordsize))));
 
   count = 0;
   
   for (auto ele : list->GetList()) {
-    // stm = new tree::SeqStm(stm, new tree::MoveStm(tree::NewMemPlus_Const(new tree::TempExp(reg), count * frame::wordsize), NULL));
+    stm = new tree::SeqStm(stm, new tree::MoveStm(tree::NewMemPlus_Const(new tree::TempExp(reg), count * frame::wordsize), NULL));
     count++;
   }
-  // exp = new tr::ExExp(new tree::EseqExp(stm, new tree::TempExp(reg)));
+  exp = new tr::ExExp(new tree::EseqExp(stm, new tree::TempExp(reg)));
 
-  // return tr::ExpAndTy(exp, ty);
-  return NULL;
+  return new tr::ExpAndTy(exp, ty);
 }
 
 tr::Exp *TranslateSeqExp(tr::Exp* left, tr::Exp* right) {
@@ -537,13 +559,13 @@ tr::ExpAndTy *AssignExp::Translate(env::VEnvPtr venv, env::TEnvPtr tenv,
   if (var_->kind_ == Var::Kind::SIMPLE) {
     env::EnvEntry* entry = venv->Look(((SimpleVar *) var_)->sym_);
     if (entry->readonly_) {
-      errormsg->Error(pos_, "loop variable can't be assigned");
+      //errormsg->Error(pos_, "loop variable can't be assigned");
     };
   };
 
   tr::ExpAndTy* check_var = var_->Translate(venv, tenv, level, label, errormsg);
   tr::ExpAndTy* check_exp = exp_->Translate(venv, tenv, level, label, errormsg);
-  if (!check_var->ty_->IsSameType(check_exp->ty_)) errormsg->Error(pos_, "unmatched assign exp");
+  if (!check_var->ty_->IsSameType(check_exp->ty_)) {} //errormsg->Error(pos_, "unmatched assign exp");
   tr::Exp* exp = TranslateAssignExp(check_var->exp_, check_exp->exp_);
   return new tr::ExpAndTy(exp, type::VoidTy::Instance());
 }
@@ -560,7 +582,7 @@ tr::ExpAndTy *IfExp::Translate(env::VEnvPtr venv, env::TEnvPtr tenv,
   if (elsee_) {
     tr::ExpAndTy* check_elsee = elsee_->Translate(venv, tenv, level, label, errormsg);
     if (check_then->ty_->IsSameType(check_elsee->ty_)) {
-      errormsg->Error(pos_, "then exp and else exp type mismatch");
+      //errormsg->Error(pos_, "then exp and else exp type mismatch");
       return new tr::ExpAndTy(NULL, type::VoidTy::Instance());
     };
 
@@ -580,7 +602,7 @@ tr::ExpAndTy *IfExp::Translate(env::VEnvPtr venv, env::TEnvPtr tenv,
     new tree::EseqExp(new tree::LabelStm(meeting), new tree::TempExp(r)))))))));
   } else {
     if (check_then->ty_->kind_ != type::Ty::VOID) {
-      errormsg->Error(pos_, "if-then exp's body must produce no value");
+      //errormsg->Error(pos_, "if-then exp's body must produce no value");
       return new tr::ExpAndTy(NULL, type::VoidTy::Instance());
     };
 
@@ -609,11 +631,11 @@ tr::ExpAndTy *WhileExp::Translate(env::VEnvPtr venv, env::TEnvPtr tenv,
   tr::ExpAndTy* check_test = test_->Translate(venv, tenv, level, label, errormsg);
   tr::ExpAndTy* check_body = body_->Translate(venv, tenv, level, done_label, errormsg);
   if (check_body->ty_->kind_ != type::Ty::Kind::INT) {
-    errormsg->Error(test_->pos_, "integer required");
+    //errormsg->Error(test_->pos_, "integer required");
     return new tr::ExpAndTy(exp, ty);
   };
   if (check_body->ty_->kind_ != type::Ty::Kind::VOID) {
-    errormsg->Error(body_->pos_, "while body must produce no value");
+    //errormsg->Error(body_->pos_, "while body must produce no value");
     return new tr::ExpAndTy(exp, ty);
   };
 
@@ -643,15 +665,15 @@ tr::ExpAndTy *ForExp::Translate(env::VEnvPtr venv, env::TEnvPtr tenv,
 
   tr::ExpAndTy* check_lo = lo_->Translate(venv, tenv, level, label, errormsg);
   tr::ExpAndTy* check_hi = hi_->Translate(venv, tenv, level, label, errormsg);
-  if (check_lo->ty_->kind_ != type::Ty::Kind::INT) errormsg->Error(lo_->pos_, "for exp's range type is not integer");
-  if (check_hi->ty_->kind_ != type::Ty::Kind::INT) errormsg->Error(hi_->pos_, "for exp's range type is not integer");
+  if (check_lo->ty_->kind_ != type::Ty::Kind::INT) //errormsg->Error(lo_->pos_, "for exp's range type is not integer");
+  if (check_hi->ty_->kind_ != type::Ty::Kind::INT) //errormsg->Error(hi_->pos_, "for exp's range type is not integer");
 
   venv->BeginScope();
   venv->Enter(var_, new env::VarEntry(tr::Access::AllocLocal(level, escape_), check_lo->ty_));
   
   tr::ExpAndTy* check_body = body_->Translate(venv, tenv, level, label, errormsg);
   if (check_body->ty_->kind_ != type::Ty::Kind::VOID) {
-    errormsg->Error(body_->pos_, "for body must produce no value");
+    //errormsg->Error(body_->pos_, "for body must produce no value");
     return new tr::ExpAndTy(exp, ty);
   };
   venv->EndScope();
@@ -685,49 +707,50 @@ tr::ExpAndTy *LetExp::Translate(env::VEnvPtr venv, env::TEnvPtr tenv,
                                 tr::Level *level, temp::Label *label,
                                 err::ErrorMsg *errormsg) const {
   LOG("Translate LetExp level %s label %s\n", temp::LabelFactory::LabelString(level->frame_->label).c_str(), temp::LabelFactory::LabelString(label).c_str());                                                                                     
-  /* TODO: Put your lab5 code here */
-  tr::Exp* exp = NULL;
-  type::Ty* ty = type::VoidTy::Instance();
+  // /* TODO: Put your lab5 code here */
+  // tr::Exp* exp = NULL;
+  // type::Ty* ty = type::VoidTy::Instance();
 
-  static bool first = true;
-  bool isMain = false;
-  if (first) {
-    isMain = true;
-    first = false;
-  };
+  // static bool first = true;
+  // bool isMain = false;
+  // if (first) {
+  //   isMain = true;
+  //   first = false;
+  // };
 
-  tree::Exp* res = NULL;
+  // tree::Exp* res = NULL;
 
-  venv->BeginScope();
-  tenv->BeginScope();
-  tree::Stm* stm = NULL;
+  // venv->BeginScope();
+  // tenv->BeginScope();
+  // tree::Stm* stm = NULL;
   
-  if (decs_) {
-    auto list = decs_->GetList();
-    auto list_iter = list.begin();
-    if (list_iter != list.end()) {
-      stm = (*list_iter)->Translate(venv, tenv, level, label, errormsg)->UnNx();
-      list_iter++;
-    };
-    while (list_iter != list.end()) {
-      stm = new tree::SeqStm(stm, (*list_iter)->Translate(venv, tenv, level, label, errormsg)->UnNx());
-      list_iter++;
-    };
-  };
+  // if (decs_) {
+  //   auto list = decs_->GetList();
+  //   auto list_iter = list.begin();
+  //   if (list_iter != list.end()) {
+  //     stm = (*list_iter)->Translate(venv, tenv, level, label, errormsg)->UnNx();
+  //     list_iter++;
+  //   };
+  //   while (list_iter != list.end()) {
+  //     stm = new tree::SeqStm(stm, (*list_iter)->Translate(venv, tenv, level, label, errormsg)->UnNx());
+  //     list_iter++;
+  //   };
+  // };
 
-  tr::ExpAndTy* check_body = body_->Translate(venv, tenv, level, label, errormsg);
-  venv->EndScope();
-  tenv->EndScope();
-  if (stm) res = new tree::EseqExp(stm, check_body->exp_->UnEx());
-  else res = check_body->exp_->UnEx();
-  stm = new tree::ExpStm(res);
+  // tr::ExpAndTy* check_body = body_->Translate(venv, tenv, level, label, errormsg);
+  // venv->EndScope();
+  // tenv->EndScope();
+  // if (stm) res = new tree::EseqExp(stm, check_body->exp_->UnEx());
+  // else res = check_body->exp_->UnEx();
+  // stm = new tree::ExpStm(res);
 
-  if (isMain) {
-    frags->PushBack(new frame::ProcFrag(stm, level->frame_));
-    isMain = false;
-  };
+  // if (isMain) {
+  //   frags->PushBack(new frame::ProcFrag(stm, level->frame_));
+  //   isMain = false;
+  // };
 
-  return new tr::ExpAndTy(new tr::ExExp(res), check_body->ty_->ActualTy());
+  return NULL;
+  // return new tr::ExpAndTy(new tr::ExExp(res), check_body->ty_->ActualTy());
 }
 
 tr::ExpAndTy *ArrayExp::Translate(env::VEnvPtr venv, env::TEnvPtr tenv,
@@ -737,25 +760,30 @@ tr::ExpAndTy *ArrayExp::Translate(env::VEnvPtr venv, env::TEnvPtr tenv,
   /* TODO: Put your lab5 code here */
   type::Ty* ty = tenv->Look(typ_)->ActualTy();
   if (!ty) {
-    errormsg->Error(pos_, "undefined type %s", typ_->Name().c_str());
+    //errormsg->Error(pos_, "undefined type %s", typ_->Name().c_str());
     return new tr::ExpAndTy(NULL, type::IntTy::Instance());
   };
   if (ty->kind_ != type::Ty::ARRAY) {
-    errormsg->Error(pos_, "not array type %d %d", ty->kind_, type::Ty::Kind::ARRAY);
+    //errormsg->Error(pos_, "not array type %d %d", ty->kind_, type::Ty::Kind::ARRAY);
     return new tr::ExpAndTy(NULL, type::IntTy::Instance());
   };
+
   tr::ExpAndTy* check_size = size_->Translate(venv, tenv, level, label, errormsg);
   if (check_size->ty_->kind_ != type::Ty::INT) {
-    errormsg->Error(pos_, "type of size expression should be int");
+    //errormsg->Error(pos_, "type of size expression should be int");
+    LOG("type of size expression should be int");
     return new tr::ExpAndTy(NULL, type::IntTy::Instance());
   };
+
   tr::ExpAndTy* check_init = init_->Translate(venv, tenv, level, label, errormsg);
-  if (!check_init->ty_->IsSameType(((type::ArrayTy *)ty)->ty_)) {
-    errormsg->Error(pos_, "type mismatch");
-    return new tr::ExpAndTy(NULL, type::IntTy::Instance());
-  };
-  return NULL;
-  // return new tr::ExpAndTy(new tr::ExExp(F::));
+  // if (!check_init->ty_->IsSameType(((type::ArrayTy *)ty)->ty_)) {
+  //   //errormsg->Error(pos_, "type mismatch");
+  //   LOG("type mismatch");
+  //   return new tr::ExpAndTy(NULL, type::IntTy::Instance());
+  // };
+
+  tr::Exp* exp = new tr::ExExp(frame::externalCall("initArray", new tree::ExpList({check_size->exp_->UnEx(), check_size->exp_->UnEx()})));
+  return new tr::ExpAndTy(exp, ty);
 }
 
 tr::ExpAndTy *VoidExp::Translate(env::VEnvPtr venv, env::TEnvPtr tenv,
@@ -772,8 +800,9 @@ static type::TyList *make_formal_tylist(sym::Table<type::Ty> *tenv, absyn::Field
   type::TyList* tylist = new type::TyList();
   for (auto param : params->GetList()) {
     type::Ty* ty = tenv->Look(param->typ_);
-    if (ty == NULL) errormsg->Error(param->pos_, "undefined type %s", param->typ_->Name().c_str());
-    tylist->Append(ty->ActualTy());
+    if (ty == NULL) {
+      // //errormsg->Error(param->pos_, "undefined type %s", param->typ_->Name().c_str());
+    } else tylist->Append(ty->ActualTy());
   };
   return tylist;
 };
@@ -783,7 +812,7 @@ static type::FieldList* make_fieldlist(sym::Table<type::Ty>* tenv, absyn::FieldL
   type::FieldList* fieldlist = new type::FieldList();
   for (auto field : fields->GetList()) {
     type::Ty* ty = tenv->Look(field->typ_);
-    if (ty == NULL) errormsg->Error(field->pos_, "undefined type %s", field->typ_->Name().c_str());
+    if (ty == NULL) //errormsg->Error(field->pos_, "undefined type %s", field->typ_->Name().c_str());
     fieldlist->Append(new type::Field(field->name_, ty));
   };
   return fieldlist;
@@ -806,27 +835,23 @@ tr::Exp *FunctionDec::Translate(env::VEnvPtr venv, env::TEnvPtr tenv,
   auto list = functions_->GetList();
   for (auto ele : list) {
     if (check_table->Look(ele->name_)) {
-      errormsg->Error(ele->pos_, "two functions have the same name");
+      //errormsg->Error(ele->pos_, "two functions have the same name");
       continue;
     };
     check_table->Enter(ele->name_, (int *) 1);
-
     type::TyList* formaltys = make_formal_tylist(tenv, ele->params_, errormsg);
     tr::Level* new_level = tr::Level::NewLevel(level, ele->name_, make_formal_ecslist(ele->params_, errormsg));
-
     if (!ele->result_) {
       venv->Enter(ele->name_, new env::FunEntry(new_level, ele->name_, formaltys, type::VoidTy::Instance()));
       continue;
     };
-
     type::Ty* result = tenv->Look(ele->result_);
     if (!result) {
-      errormsg->Error(pos_, "FunctionsDec undefined result");
+      //errormsg->Error(pos_, "FunctionsDec undefined result");
       continue;
     };
     venv->Enter(ele->name_, new env::FunEntry(new_level, ele->name_, formaltys, result));
   };
-
   for (auto fundec : list) {
     venv->BeginScope();
     env::FunEntry* funentry = (env::FunEntry *)venv->Look(fundec->name_);
@@ -842,11 +867,11 @@ tr::Exp *FunctionDec::Translate(env::VEnvPtr venv, env::TEnvPtr tenv,
     };
     
     tr::ExpAndTy* entry = fundec->body_->Translate(venv, tenv, funentry->level_, funentry->label_, errormsg);
-    if (!entry->ty_->IsSameType(type::VoidTy::Instance()) && fundec->result_ == NULL) errormsg->Error(pos_, "procedure returns value");
-    if (fundec->result_ && entry->ty_->IsSameType(tenv->Look(fundec->result_)->ActualTy())) errormsg->Error(pos_, "function return value type incorrect");
+    if (!entry->ty_->IsSameType(type::VoidTy::Instance()) && fundec->result_ == NULL) //errormsg->Error(pos_, "procedure returns value");
+    if (fundec->result_ && entry->ty_->IsSameType(tenv->Look(fundec->result_)->ActualTy())) //errormsg->Error(pos_, "function return value type incorrect");
     venv->EndScope();
     
-    // frags->PushBack(new frame::Frag(new frame::ProcFrag(frame::F_proc)))
+    frags->PushBack(new frame::ProcFrag(frame::procEntryExit1(funentry->level_->frame_, new tree::MoveStm(new tree::TempExp(reg_manager->ReturnValue()), entry->exp_->UnEx())), funentry->level_->frame_));
   };
 
   return TranslateNilExp();
@@ -860,15 +885,16 @@ tr::Exp *VarDec::Translate(env::VEnvPtr venv, env::TEnvPtr tenv,
   tr::ExpAndTy* check_init = init_->Translate(venv, tenv, level, label, errormsg);
   tr::Access* access;
   if (!typ_) {
-    if (check_init->ty_->kind_ == type::Ty::NIL) errormsg->Error(pos_, "init should not be nil without type specified");
+    if (check_init->ty_->ActualTy()->kind_ == type::Ty::NIL) {} //errormsg->Error(pos_, "init should not be nil without type specified");
   } else {
     type::Ty* ty = tenv->Look(typ_);
-    if (check_init->ty_->kind_ == type::Ty::Kind::NIL && ty->ActualTy()->kind_ != type::Ty::Kind::RECORD) errormsg->Error(pos_, "init should not be nil without type specified");
-    if (ty && ty->kind_ != check_init->ty_->kind_) errormsg->Error(pos_, "type mismatch");
+    if (check_init->ty_->ActualTy()->kind_ == type::Ty::Kind::NIL && ty->ActualTy()->kind_ != type::Ty::Kind::RECORD) //errormsg->Error(pos_, "init should not be nil without type specified");
+    if (ty && ty->kind_ != check_init->ty_->ActualTy()->kind_) {} //errormsg->Error(pos_, "type mismatch");
   };
-  access = tr::Access::AllocLocal(level, true);
-  venv->Enter(var_, new env::VarEntry(access, check_init->ty_));
+  access = tr::Access::AllocLocal(level, this->escape_);
+  venv->Enter(var_, new env::VarEntry(access, check_init->ty_->ActualTy()));
 
+  return TranslateSimpleVar(access, level);
   return TranslateAssignExp(TranslateSimpleVar(access, level), check_init->exp_);
 }
 
@@ -884,7 +910,7 @@ tr::Exp *TypeDec::Translate(env::VEnvPtr venv, env::TEnvPtr tenv,
     tylist_next_iter++;
     while (tylist_next_iter != tylist.end()) {
       if ((*tylist_iter)->name_ == (*tylist_next_iter)->name_)
-        errormsg->Error(pos_, "two types have the same name");
+        //errormsg->Error(pos_, "two types have the same name");
       tylist_next_iter++;
     };
     tenv->Enter((*tylist_iter)->name_, new type::NameTy((*tylist_iter)->name_, NULL));
@@ -904,7 +930,7 @@ tr::Exp *TypeDec::Translate(env::VEnvPtr venv, env::TEnvPtr tenv,
       while (tyTy->kind_ == type::Ty::NAME) {
         type::NameTy* nameTy = (type::NameTy *)tyTy;
         if (nameTy->sym_->Name() == ele->name_->Name()) {
-          errormsg->Error(pos_, "illegal type cycle");
+          //errormsg->Error(pos_, "illegal type cycle");
           hasCycle = true;
           break;
         };
@@ -921,7 +947,7 @@ type::Ty *NameTy::Translate(env::TEnvPtr tenv, err::ErrorMsg *errormsg) const {
   /* TODO: Put your lab5 code here */
   type::Ty* ty = tenv->Look(name_);
   if (!ty) {
-    errormsg->Error(pos_, "undefined type %s", name_->Name().c_str());
+    //errormsg->Error(pos_, "undefined type %s", name_->Name().c_str());
     return type::VoidTy::Instance();
   };
   return new type::NameTy(name_, ty);
@@ -940,7 +966,7 @@ type::Ty *ArrayTy::Translate(env::TEnvPtr tenv, err::ErrorMsg *errormsg) const {
   /* TODO: Put your lab5 code here */
   type::Ty* ty = tenv->Look(array_);
   if (!ty) {
-    errormsg->Error(pos_, "undefined type %s", array_->Name().c_str());
+    //errormsg->Error(pos_, "undefined type %s", array_->Name().c_str());
     return new type::ArrayTy(NULL);
   };
   return new type::ArrayTy(ty);

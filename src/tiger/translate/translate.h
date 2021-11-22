@@ -8,6 +8,7 @@
 #include "tiger/env/env.h"
 #include "tiger/errormsg/errormsg.h"
 #include "tiger/frame/frame.h"
+#include "tiger/frame/x64frame.h"
 #include "tiger/semant/types.h"
 
 namespace tr {
@@ -45,7 +46,9 @@ public:
   Level(frame::Frame* frame, Level* parent): frame_(frame), parent_(parent) {};
   AccessList* Formals(Level* level) { return NULL; };
   
-  static Level* NewLevel(Level* parent, temp::Label* name, std::list<bool> formals);
+  static Level* NewLevel(Level* parent, temp::Label* name, std::list<bool> formals) {
+    return new Level(new frame::X64Frame(name, formals), parent);
+  };
 };
 
 class ProgTr {

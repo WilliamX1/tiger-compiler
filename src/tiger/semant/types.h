@@ -19,6 +19,8 @@ public:
   virtual Ty *ActualTy();
   virtual bool IsSameType(Ty *);
 
+  virtual ~Ty() = default;
+
 protected:
   Ty(Kind kind) : kind_(kind) {};
 };

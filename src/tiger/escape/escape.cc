@@ -2,7 +2,10 @@
 #include "tiger/absyn/absyn.h"
 
 namespace esc {
-void EscFinder::FindEscape() { absyn_tree_->Traverse(env_.get()); }
+void EscFinder::FindEscape() { 
+  sym::Table<EscapeEntry>* env = new sym::Table<EscapeEntry>();
+  absyn_tree_->Traverse(env);
+}
 } // namespace esc
 
 namespace absyn {
@@ -10,14 +13,14 @@ namespace absyn {
 void AbsynTree::Traverse(esc::EscEnvPtr env) {
   /* TODO: Put your lab5 code here */
   /* depth from 0 */
-  root_->Traverse(env, 0);
+  root_->Traverse(env, 1);
 }
 
 void SimpleVar::Traverse(esc::EscEnvPtr env, int depth) {
   /* TODO: Put your lab5 code here */
-  auto t = env->Look(sym_);
+  esc::EscapeEntry* t = env->Look(sym_);
   if (depth > t->depth_)
-    *t->escape_ = true;
+    *(t->escape_) = true;
   return;
 }
 

@@ -64,25 +64,14 @@ test_lab5:
    - make gradelab5 | tee output.log
    - python3 upload.py
 
-# test_lab6:
-#  image: ipadsse302/tigerlabs_score_env
-#  tags:
-#    - val runner docker executor
-#  stage: test
-#  script:
-#    - rm -rf scripts testdata
-#    - cp -r /home/stu/upload.py /home/stu/scripts /home/stu/testdata .
-#    - make gradelab6 | tee output.log
-#    - python3 upload.py
-#
-# test_all:
-#   image: ipadsse302/tigerlabs_score_env
-#   tags:
-#     - val runner docker executor
-#   stage: test
-#   script:
-#     - rm -rf scripts testdata
-#     - cp -r /home/stu/upload.py /home/stu/scripts /home/stu/testdata .
-#     - make gradeall | tee output.log
-#     - python3 upload.py
-# 
+test_lab6:
+ image: ipadsse302/tigerlabs_score_env
+ tags:
+   - val runner docker executor
+ stage: test
+ script:
+   - rm -rf scripts testdata
+   - cp -r /home/stu/upload.py /home/stu/scripts /home/stu/testdata .
+   - make gradelab6 | tee output.log
+   - python3 upload.py
+

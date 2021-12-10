@@ -483,6 +483,8 @@ temp::Temp *CallExp::Munch(assem::InstrList &instr_list, std::string_view fs) {
   args_->MunchArgs(instr_list, fs);
   std::string assem = std::string("callq ") + std::string(label);
   instr_list.Append(new assem::OperInstr(assem, reg_manager->CallerSaves(), reg_manager->ArgRegs(), NULL));
+  // args_->UnMunchArgs(instr_list, fs);
+
   instr_list.Append(new assem::MoveInstr("movq `s0, `d0", new temp::TempList(r), new temp::TempList(reg_manager->RAX())));
   LOG("End CallExp : \n");
   return r;
@@ -499,12 +501,36 @@ temp::TempList *ExpList::MunchArgs(assem::InstrList &instr_list, std::string_vie
     if (i <= 6) { /* using register as possible */
       instr_list.Append(new assem::MoveInstr("movq `s0, `d0", new temp::TempList(reg_manager->GetNthArg(i)), new temp::TempList(arg)));
     } else {
-      assert(0); /* no thinking more than 6 parameters */
+      // assert(0); /* no thinking more than 6 parameters */
+      // std::stringstream stream;
+      // stream << "subq $" << frame::wordsize << ", `s0";
+      // std::string assem = stream.str();      
+      // instr_list.Append(new assem::OperInstr(assem, NULL, new temp::TempList(reg_manager->StackPointer()), NULL));
+      std::stringstream stream;
+      stream << "movq `s0, " << (6 - i) * frame::wordsize << "(`s1)";
+      std::string assem = stream.str();
+      instr_list.Append(new assem::OperInstr(assem, NULL, new temp::TempList({arg, reg_manager->RSP()}), NULL));
+      // instr_list.Append(new assem::OperInstr("movq `s0, (`s1)", NULL, new temp::TempList({arg, reg_manager->StackPointer()}), NULL));
     }
     reg_list->Append(arg);
   };
   LOG("End TempList\n");
   return reg_list;
+}
+
+void ExpList::UnMunchArgs(assem::InstrList &instr_list, std::string_view fs) {
+  int i = 0;
+  for (auto exp : exp_list_) {
+    i++;
+    if (i <= 6) {}
+    else {
+      std::stringstream stream;
+      stream << "addq $" << frame::wordsize << ", `s0";
+      std::string assem = stream.str();
+      instr_list.Append(new assem::OperInstr(assem, NULL, new temp::TempList(reg_manager->StackPointer()), NULL));
+    };
+  };
+  return;
 }
 
 } // namespace tree

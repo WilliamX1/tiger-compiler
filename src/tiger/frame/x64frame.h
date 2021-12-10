@@ -59,6 +59,7 @@ public:
     case 4: return RCX();
     case 5: return R8();
     case 6: return R9();
+    case 7: return R10();
     };
     assert(0);
   };

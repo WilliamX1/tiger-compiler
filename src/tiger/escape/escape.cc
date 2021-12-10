@@ -153,7 +153,9 @@ void FunctionDec::Traverse(esc::EscEnvPtr env, int depth) {
   for (auto fuc : fuclist) {
     env->BeginScope();
     auto paramlist = fuc->params_->GetList();
+    // int cnt = 0;
     for (auto param : paramlist) {
+      // param->escape_ = ++cnt > 6; // false;
       param->escape_ = false;
       env->Enter(param->name_, new esc::EscapeEntry(depth + 1, &param->escape_));
     };

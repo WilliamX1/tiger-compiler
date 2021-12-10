@@ -3,6 +3,8 @@
 
 #include <list>
 #include <memory>
+#include <string>
+#include <string_view>
 
 #include "tiger/absyn/absyn.h"
 #include "tiger/env/env.h"

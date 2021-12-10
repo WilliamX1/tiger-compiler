@@ -57,23 +57,23 @@ tree::Exp* externalCall(std::string s, tree::ExpList* args) {
 };
 
 tree::Stm* ProcEntryExit1(Frame* frame, tree::Stm* stm) {
-  // int num = 1;
-  // 
-  // tree::Stm* viewshift = new tree::ExpStm(new tree::ConstExp(0));
-  // 
-  // auto formal_list = frame->formals->GetList();
-  // 
-  // for (auto formal : formal_list) {
-  //   if (reg_manager->GetNthArg(num));
-  //     viewshift = new tree::SeqStm(viewshift, new tree::MoveStm(formal->ToExp(new tree::TempExp(reg_manager->FramePointer())), new tree::TempExp(reg_manager->GetNthArg(num))));
-  //   num++;
-  // };
-  // return new tree::SeqStm(viewshift, stm);
-  tree::Stm* result = new tree::ExpStm(new tree::ConstExp(0));
-  for (auto& view : frame->viewShift->GetList()) {
-    result = new tree::SeqStm(result, view);
+  int num = 1;
+  
+  tree::Stm* viewshift = new tree::ExpStm(new tree::ConstExp(0));
+  
+  auto formal_list = frame->formals->GetList();
+  
+  for (auto formal : formal_list) {
+    if (reg_manager->GetNthArg(num));
+      viewshift = new tree::SeqStm(viewshift, new tree::MoveStm(formal->ToExp(new tree::TempExp(reg_manager->FramePointer())), new tree::TempExp(reg_manager->GetNthArg(num))));
+    num++;
   };
-  return new tree::SeqStm(result, stm);;
+  return new tree::SeqStm(viewshift, stm);
+  // tree::Stm* result = new tree::ExpStm(new tree::ConstExp(0));
+  // for (auto& view : frame->viewShift->GetList()) {
+    // result = new tree::SeqStm(result, view);
+  // };
+  // return new tree::SeqStm(result, stm);;
 };
 
 assem::InstrList* ProcEntryExit2(assem::InstrList* body) {

@@ -183,37 +183,44 @@ type::Ty *OpExp::SemAnalyze(env::VEnvPtr venv, env::TEnvPtr tenv,
   switch (oper_) {
     case Oper::PLUS_OP: case Oper::MINUS_OP: case Oper::TIMES_OP: case Oper::DIVIDE_OP:
     {
-      if (left_ty->kind_ != type::Ty::Kind::INT) errormsg->Error(left_->pos_, "integer required");
-      if (right_ty->kind_ != type::Ty::Kind::INT) errormsg->Error(right_->pos_, "integer required");
-      break;
-    }
-    
-    case Oper::LT_OP: case Oper::LE_OP: case Oper::GT_OP: case Oper::GE_OP:
-    {
-      if (left_ty->kind_ != type::Ty::Kind::INT && left_ty->kind_ != type::Ty::Kind::STRING) 
-        errormsg->Error(left_->pos_, "integer or string param required");
-      if (right_ty->kind_ != type::Ty::Kind::INT && right_ty->kind_ != type::Ty::Kind::STRING) 
-        errormsg->Error(right_->pos_, "integer or string param required");
-      if (!left_ty->IsSameType(right_ty))
-        errormsg->Error(pos_, "same type required");
+      if (left_ty->kind_ != type::Ty::Kind::INT && left_ty->kind_ != type::Ty::Kind::NIL) errormsg->Error(left_->pos_, "integer required");
+      if (right_ty->kind_ != type::Ty::Kind::INT && right_ty->kind_ != type::Ty::Kind::NIL) errormsg->Error(right_->pos_, "integer required");
       break;
     }
 
-    case Oper::EQ_OP: case Oper::NEQ_OP:
+    case Oper::LT_OP: case Oper::LE_OP: case Oper::GT_OP: case Oper::GE_OP: case Oper::EQ_OP: case Oper::NEQ_OP:
     {
-      if (left_ty->kind_ != type::Ty::Kind::INT && left_ty->kind_ != type::Ty::Kind::STRING
-      && left_ty->kind_ != type::Ty::Kind::RECORD && left_ty->kind_ != type::Ty::Kind::ARRAY)
-        errormsg->Error(left_->pos_, "integer or string or record or array param required");
-      if (right_ty->kind_ != type::Ty::Kind::INT && right_ty->kind_ != type::Ty::Kind::STRING
-      && right_ty->kind_ != type::Ty::Kind::RECORD && right_ty->kind_ != type::Ty::Kind::ARRAY)
-        errormsg->Error(right_->pos_, "integer or string or record or array param required");
-      if (left_ty->kind_ == type::Ty::NIL && right_ty->kind_ == type::Ty::NIL)
-        errormsg->Error(pos_, "at least one operand should not be NIL");
-      if (!left_ty->IsSameType(right_ty)
-      && !(left_ty->kind_ == type::Ty::Kind::RECORD && right_ty->kind_ == type::Ty::Kind::NIL))
-        errormsg->Error(pos_, "same type required");
+      if (!left_ty->IsSameType(right_ty) && left_ty->kind_ != type::Ty::Kind::VOID && right_ty->kind_ != type::Ty::Kind::NIL) {
+        errormsg->Error(this->pos_, "same type required");
+      };
       break;
     }
+    // case Oper::LT_OP: case Oper::LE_OP: case Oper::GT_OP: case Oper::GE_OP:
+    // {
+    //   if (left_ty->kind_ != type::Ty::Kind::INT && left_ty->kind_ != type::Ty::Kind::STRING) 
+    //     errormsg->Error(left_->pos_, "integer or string param required");
+    //   if (right_ty->kind_ != type::Ty::Kind::INT && right_ty->kind_ != type::Ty::Kind::STRING) 
+    //     errormsg->Error(right_->pos_, "integer or string param required");
+    //   if (!left_ty->IsSameType(right_ty))
+    //     errormsg->Error(pos_, "same type required");
+    //   break;
+    // }
+
+    // case Oper::EQ_OP: case Oper::NEQ_OP:
+    // {
+    //   if (left_ty->kind_ != type::Ty::Kind::INT && left_ty->kind_ != type::Ty::Kind::STRING
+    //   && left_ty->kind_ != type::Ty::Kind::RECORD && left_ty->kind_ != type::Ty::Kind::ARRAY)
+    //     errormsg->Error(left_->pos_, "integer or string or record or array param required");
+    //   if (right_ty->kind_ != type::Ty::Kind::INT && right_ty->kind_ != type::Ty::Kind::STRING
+    //   && right_ty->kind_ != type::Ty::Kind::RECORD && right_ty->kind_ != type::Ty::Kind::ARRAY |)
+    //     errormsg->Error(right_->pos_, "integer or string or record or array param required");
+    //   if (left_ty->kind_ == type::Ty::NIL && right_ty->kind_ == type::Ty::NIL)
+    //     errormsg->Error(pos_, "at least one operand should not be NIL");
+    //   if (!left_ty->IsSameType(right_ty)
+    //   && !(left_ty->kind_ == type::Ty::Kind::RECORD && right_ty->kind_ == type::Ty::Kind::NIL))
+    //     errormsg->Error(pos_, "same type required");
+    //   break;
+    // }
 
     default:
       assert(0);
@@ -230,43 +237,37 @@ type::Ty *RecordExp::SemAnalyze(env::VEnvPtr venv, env::TEnvPtr tenv,
     errormsg->Error(pos_, "undefined type %s", typ_->Name().c_str());
     return type::IntTy::Instance();
   };
+  // if (ty->kind_ != type::Ty::Kind::RECORD) {
+  //   errormsg->Error(pos_, "not record type %s", typ_->Name().c_str());
+  //   return type::IntTy::Instance();
+  // };
 
-  ty = ty->ActualTy();
-  if (!ty) {
-    errormsg->Error(pos_, "undefined type %s", typ_->Name().c_str());
-    return type::IntTy::Instance();
-  };
-  if (ty->kind_ != type::Ty::Kind::RECORD) {
-    errormsg->Error(pos_, "not record type %s", typ_->Name().c_str());
-    return type::IntTy::Instance();
-  };
+  // const std::list<absyn::EField *>* fieldlist = &fields_->GetList();
+  // std::list<type::Field *>* recordlist = &((type::RecordTy*) ty)->fields_->GetList();
 
-  const std::list<absyn::EField *>* fieldlist = &fields_->GetList();
-  std::list<type::Field *>* recordlist = &((type::RecordTy*) ty)->fields_->GetList();
+  // int field_size = fieldlist->size();
+  // int record_size = recordlist->size();
+  // if (field_size != record_size) {
+  //   errormsg->Error(pos_, "field amount mismatch");
+  //   return type::IntTy::Instance();
+  // };
 
-  int field_size = fieldlist->size();
-  int record_size = recordlist->size();
-  if (field_size != record_size) {
-    errormsg->Error(pos_, "field amount mismatch");
-    return type::IntTy::Instance();
-  };
-
-  int size = field_size;
-  auto field_iter = fieldlist->begin();
-  auto record_iter = recordlist->begin();
-  while (size-- > 0) {
-    type::Ty *field_ty = (*field_iter)->exp_->SemAnalyze(venv, tenv, labelcount, errormsg);
-    if ((*field_iter)->name_ != (*record_iter)->name_) {
-      errormsg->Error(pos_, "field not defined");
-      return type::IntTy::Instance();
-    };
-    if (field_ty->kind_ != (*record_iter)->ty_->kind_) {
-      errormsg->Error(pos_, "field type mismatch");
-      return type::IntTy::Instance();
-    }
-    field_iter++;
-    record_iter++;
-  };
+  // int size = field_size;
+  // auto field_iter = fieldlist->begin();
+  // auto record_iter = recordlist->begin();
+  // while (size-- > 0) {
+  //   type::Ty *field_ty = (*field_iter)->exp_->SemAnalyze(venv, tenv, labelcount, errormsg);
+  //   if ((*field_iter)->name_ != (*record_iter)->name_) {
+  //     errormsg->Error(pos_, "field not defined");
+  //     return type::IntTy::Instance();
+  //   };
+  //   if (field_ty->kind_ != (*record_iter)->ty_->kind_) {
+  //     errormsg->Error(pos_, "field type mismatch: type1: %d, type2: %d", field_ty->kind_, (*record_iter)->ty_->kind_);
+  //     return type::IntTy::Instance();
+  //   }
+  //   field_iter++;
+  //   record_iter++;
+  // };
   return ty;
 }
 
@@ -302,7 +303,7 @@ type::Ty *AssignExp::SemAnalyze(env::VEnvPtr venv, env::TEnvPtr tenv,
   if (!var_ty->IsSameType(exp_ty))
     errormsg->Error(pos_, "unmatched assign exp");
 
-  return var_ty;
+  return type::VoidTy::Instance();
 }
 
 type::Ty *IfExp::SemAnalyze(env::VEnvPtr venv, env::TEnvPtr tenv,

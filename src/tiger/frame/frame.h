@@ -65,8 +65,23 @@ public:
 
   [[nodiscard]] virtual temp::Temp *ReturnValue() = 0;
 
-  [[nodiscard]] virtual temp::Temp* GetNthReg(int i) = 0;
   [[nodiscard]] virtual temp::Temp* GetNthArg(int i) = 0;
+  [[nodiscard]] virtual temp::Temp* RAX() = 0;
+  [[nodiscard]] virtual temp::Temp* RDI() = 0;
+  [[nodiscard]] virtual temp::Temp* RSI() = 0;
+  [[nodiscard]] virtual temp::Temp* RDX() = 0;
+  [[nodiscard]] virtual temp::Temp* RCX() = 0;
+  [[nodiscard]] virtual temp::Temp* R8() = 0;
+  [[nodiscard]] virtual temp::Temp* R9() = 0;
+  [[nodiscard]] virtual temp::Temp* R10() = 0;
+  [[nodiscard]] virtual temp::Temp* R11() = 0;
+  [[nodiscard]] virtual temp::Temp* RBX() = 0;
+  [[nodiscard]] virtual temp::Temp* RBP() = 0;
+  [[nodiscard]] virtual temp::Temp* R12() = 0;
+  [[nodiscard]] virtual temp::Temp* R13() = 0;
+  [[nodiscard]] virtual temp::Temp* R14() = 0;
+  [[nodiscard]] virtual temp::Temp* R15() = 0;
+  [[nodiscard]] virtual temp::Temp* RSP() = 0;
   
   temp::Map *temp_map_;
 protected:
@@ -106,7 +121,11 @@ public:
   AccessList* formals;
   int s_offset;
 
+  tree::StmList* viewShift;
+  int maxArgs = 0;
+
   Frame(temp::Label* name, std::list<bool> escapes) : label(name) {};
+
   virtual Access *allocLocal(bool escape) = 0;
 
   virtual ~Frame() = default;
@@ -171,9 +190,9 @@ private:
 
 /* TODO: Put your lab5 code here */
 tree::Exp* externalCall(std::string s, tree::ExpList* args);
-tree::Stm* procEntryExit1(Frame* frame, tree::Stm* stm);
-assem::InstrList* procEntryExit2(assem::InstrList* ilist);
-assem::Proc* procEntryExit3(Frame* frame, assem::InstrList* ilist);
+tree::Stm* ProcEntryExit1(Frame* frame, tree::Stm* stm);
+assem::InstrList* ProcEntryExit2(assem::InstrList* ilist);
+assem::Proc* ProcEntryExit3(Frame* frame, assem::InstrList* ilist);
 
 } // namespace frame
 

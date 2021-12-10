@@ -2,6 +2,19 @@
 
 #include <cassert>
 
+#define DEBUG
+
+#ifdef DEBUG
+  #define LOG(format, args...) do {   \
+    FILE* debug_log = fopen("assem.log", "a+");  \
+    fprintf(debug_log, "%d, %s: \n", __LINE__, __func__); \
+    fprintf(debug_log, format, ##args); \
+    fclose(debug_log);\
+  } while (0)
+#else
+  #define LOG(format, args...) do{} while (0)
+#endif
+
 namespace temp {
 
 Temp *TempList::NthTemp(int i) const {
@@ -65,16 +78,21 @@ static std::string Format(std::string_view assem, temp::TempList *dst,
 }
 
 void OperInstr::Print(FILE *out, temp::Map *m) const {
+  LOG("Start OperInstr: assem: %s\n", assem_.c_str());
   std::string result = Format(assem_, dst_, src_, jumps_, m);
+  LOG("End OperInstr: result: %s\n", result.c_str());
   fprintf(out, "%s\n", result.data());
 }
 
 void LabelInstr::Print(FILE *out, temp::Map *m) const {
+  LOG("Start LabelInstr: assem: %s\n", assem_.c_str());
   std::string result = Format(assem_, nullptr, nullptr, nullptr, m);
+  LOG("End LabelInstr: result: %s\n", result.c_str());
   fprintf(out, "%s:\n", result.data());
 }
 
 void MoveInstr::Print(FILE *out, temp::Map *m) const {
+  LOG("Start MoveInstr: assem: %s\n", assem_.c_str());
   if (!dst_ && !src_) {
     std::size_t srcpos = assem_.find_first_of('%');
     if (srcpos != std::string::npos) {
@@ -88,12 +106,16 @@ void MoveInstr::Print(FILE *out, temp::Map *m) const {
     }
   }
   std::string result = Format(assem_, dst_, src_, nullptr, m);
+  LOG("End MoveInstr: result: %s\n", result.c_str());
   fprintf(out, "%s\n", result.data());
 }
 
 void InstrList::Print(FILE *out, temp::Map *m) const {
+  LOG("~~~~~~Assem: Start Print~~~~~~\n");
   for (auto instr : instr_list_)
     instr->Print(out, m);
+    
+  LOG("~~~~~~Assem: End Print~~~~~~\n");
   fprintf(out, "\n");
 }
 

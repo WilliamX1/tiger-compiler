@@ -12,58 +12,120 @@ namespace frame {
 const int wordsize = 8;
 
 class X64RegManager : public RegManager {
-public:
-  X64RegManager() : frame::RegManager() {
-    rax = temp::TempFactory::NewTemp();
-    temp_map_->Enter(rax, new std::string("%rax"));
-    rdi = temp::TempFactory::NewTemp();
-    temp_map_->Enter(rdi, new std::string("%rdi"));
-    rsi = temp::TempFactory::NewTemp();
-    temp_map_->Enter(rsi, new std::string("%rsi"));
-    rdx = temp::TempFactory::NewTemp();
-    temp_map_->Enter(rdx, new std::string("%rdx"));
-    rcx = temp::TempFactory::NewTemp();
-    temp_map_->Enter(rcx, new std::string("%rcx"));
-    r8 = temp::TempFactory::NewTemp();
-    temp_map_->Enter(r8, new std::string("%r8"));
-    r9 = temp::TempFactory::NewTemp();
-    temp_map_->Enter(r9, new std::string("%r9"));
-    r10 = temp::TempFactory::NewTemp();
-    temp_map_->Enter(r10, new std::string("%r10"));
-    r11 = temp::TempFactory::NewTemp();
-    temp_map_->Enter(r11, new std::string("%r11"));
-    rbx = temp::TempFactory::NewTemp();
-    temp_map_->Enter(rbx, new std::string("%rbx"));
-    rbp = temp::TempFactory::NewTemp();
-    temp_map_->Enter(rbp, new std::string("%rbp"));
-    r12 = temp::TempFactory::NewTemp();
-    temp_map_->Enter(r12, new std::string("%r12"));
-    r13 = temp::TempFactory::NewTemp();
-    temp_map_->Enter(r13, new std::string("%r13"));
-    r14 = temp::TempFactory::NewTemp();
-    temp_map_->Enter(r14, new std::string("%r14"));
-    r15 = temp::TempFactory::NewTemp();
-    temp_map_->Enter(r15, new std::string("%r15"));
-    rsp = temp::TempFactory::NewTemp();
-    temp_map_->Enter(rsp, new std::string("%rsp"));
-  };
-  /* TODO: Put your lab5 code here */
-  temp::TempList* Registers();
-  temp::TempList* ArgRegs();
-  temp::TempList* CallerSaves();
-  temp::TempList* CalleeSaves();
-  temp::TempList* ReturnSink();
-  int WordSize();
-  temp::Temp* FramePointer();
-  temp::Temp* StackPointer();
-  temp::Temp* ReturnValue();
-  temp::Temp* GetNthReg(int i);
-  temp::Temp* GetNthArg(int i);
 
 private:
   temp::Temp *rax, *rdi, *rsi, *rdx, *rcx, *r8, 
             *r9, *r10, *r11, *rbx, *rbp, *r12, 
             *r13, *r14, *r15, *rsp;
+
+public:
+  X64RegManager() : frame::RegManager() {
+    temp_map_->Enter(RAX(), new std::string("%rax"));
+    temp_map_->Enter(RDI(), new std::string("%rdi"));
+    temp_map_->Enter(RSI(), new std::string("%rsi"));
+    temp_map_->Enter(RDX(), new std::string("%rdx"));
+    temp_map_->Enter(RCX(), new std::string("%rcx"));
+    temp_map_->Enter(R8(), new std::string("%r8"));
+    temp_map_->Enter(R9(), new std::string("%r9"));
+    temp_map_->Enter(R10(), new std::string("%r10"));
+    temp_map_->Enter(R11(), new std::string("%r11"));
+    temp_map_->Enter(RBX(), new std::string("%rbx"));
+    temp_map_->Enter(RBP(), new std::string("%rbp"));
+    temp_map_->Enter(R12(), new std::string("%r12"));
+    temp_map_->Enter(R13(), new std::string("%r13"));
+    temp_map_->Enter(R14(), new std::string("%r14"));
+    temp_map_->Enter(R15(), new std::string("%r15"));
+    temp_map_->Enter(RSP(), new std::string("%rsp"));
+  };
+  /* TODO: Put your lab5 code here */
+  temp::TempList* Registers() override;
+  temp::TempList* ArgRegs() override;
+  temp::TempList* CallerSaves() override;
+  temp::TempList* CalleeSaves() override;
+  temp::TempList* ReturnSink() override;
+  int WordSize() override;
+  temp::Temp* FramePointer() override;
+  temp::Temp* StackPointer() override;
+  temp::Temp* ReturnValue() override;
+
+  /* get nth argument for function, range from 1 to 6 */
+  temp::Temp* GetNthArg(int i) {
+    assert(i != 0);
+    switch (i)
+    {
+    case 1: return RDI();
+    case 2: return RSI();
+    case 3: return RDX();
+    case 4: return RCX();
+    case 5: return R8();
+    case 6: return R9();
+    };
+    assert(0);
+  };
+  temp::Temp* RAX() { 
+    if (rax == nullptr) rax = temp::TempFactory::NewTemp(); 
+    return rax; 
+  };
+  temp::Temp* RDI() { 
+    if (rdi == nullptr) rdi = temp::TempFactory::NewTemp();
+    return rdi; 
+  };
+  temp::Temp* RSI() {
+    if (rsi == nullptr) rsi = temp::TempFactory::NewTemp();
+    return rsi; 
+  };
+  temp::Temp* RDX() {
+    if (rdx == nullptr) rdx = temp::TempFactory::NewTemp();
+    return rdx;
+  };
+  temp::Temp* RCX() {
+    if (rcx == nullptr) rcx = temp::TempFactory::NewTemp();
+    return rcx;
+  };
+  temp::Temp* R8() {
+    if (r8 == nullptr) r8 = temp::TempFactory::NewTemp();
+    return r8;
+  };
+  temp::Temp* R9() { 
+    if (r9 == nullptr) r9 = temp::TempFactory::NewTemp();
+    return r9; 
+  };
+  temp::Temp* R10() { 
+    if (r10 == nullptr) r10 = temp::TempFactory::NewTemp();
+    return r10; 
+  };
+  temp::Temp* R11() { 
+    if (r11 == nullptr) r11 = temp::TempFactory::NewTemp();
+    return r11;
+  };
+  temp::Temp* RBX() {
+    if (rbx == nullptr) rbx = temp::TempFactory::NewTemp();
+    return rbx;
+  };
+  temp::Temp* RBP() { 
+    if (rbp == nullptr) rbp = temp::TempFactory::NewTemp();
+    return rbp;
+  };
+  temp::Temp* R12() {
+    if (r12 == nullptr) r12 = temp::TempFactory::NewTemp();
+    return r12;
+  };
+  temp::Temp* R13() { 
+    if (r13 == nullptr) r13 = temp::TempFactory::NewTemp();
+    return r13;
+  };
+  temp::Temp* R14() { 
+    if (r14 == nullptr) r14 = temp::TempFactory::NewTemp();
+    return r14; 
+  };
+  temp::Temp* R15() { 
+    if (r15 == nullptr) r15 = temp::TempFactory::NewTemp();
+    return r15;
+  };
+  temp::Temp* RSP() {
+    if (rsp == nullptr) rsp = temp::TempFactory::NewTemp();
+    return rsp;
+  };
 };
 
 class InFrameAccess : public Access {
@@ -85,14 +147,7 @@ public:
 class X64Frame : public Frame {
   /* TODO: Put your lab5 code here */
 public:
-  X64Frame(temp::Label* name, std::list<bool> escapes) : Frame(name, escapes) {
-    this->s_offset = -8;
-    this->formals = new AccessList();
-
-    for (auto ele : escapes) {
-      this->formals->PushBack(allocLocal(ele));
-    }
-  };
+  X64Frame(temp::Label* name, std::list<bool> escapes);
   Access* allocLocal(bool escape) override;
 };
 

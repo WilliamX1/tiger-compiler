@@ -47,6 +47,9 @@ public:
     return std::move(assem_instr_);
   }
 
+  static void saveCalleeRegs(assem::InstrList &instr_list, std::string_view fs);
+  static void restoreCalleeRegs(assem::InstrList &instr_list, std::string_view fs);
+
 private:
   frame::Frame *frame_;
   std::string fs_; // Frame size label_

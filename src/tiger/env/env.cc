@@ -12,6 +12,15 @@ void ProgSem::FillBaseVEnv() {
   type::Ty *result;
   type::TyList *formals;
 
+//   venv_->Enter(sym::Symbol::UniqueSymbol("init_array"),
+//                 new env::FunEntry(new type::TyList({type::IntTy::Instance(), type::IntTy::Instance()}), type::IntTy::Instance()));
+
+//   venv_->Enter(sym::Symbol::UniqueSymbol("alloc_record"),
+//                 new env::FunEntry(new type::TyList(type::IntTy::Instance()), type::IntTy::Instance()));
+
+//   venv_->Enter(sym::Symbol::UniqueSymbol("string_equal"), 
+//                 new env::FunEntry(new type::TyList({type::StringTy::Instance(), type::StringTy::Instance()}), type::IntTy::Instance()));
+
   venv_->Enter(sym::Symbol::UniqueSymbol("flush"),
                new env::FunEntry(new type::TyList(), type::VoidTy::Instance()));
 
@@ -74,6 +83,15 @@ void ProgTr::FillBaseVEnv() {
 
   temp::Label *label = nullptr;
   tr::Level *level = main_level_.get();
+
+//   venv_->Enter(sym::Symbol::UniqueSymbol("init_array"),
+//                 new env::FunEntry(level, label, new type::TyList({type::IntTy::Instance(), type::IntTy::Instance()}), type::IntTy::Instance()));
+
+//   venv_->Enter(sym::Symbol::UniqueSymbol("alloc_record"),
+//                 new env::FunEntry(level, label, new type::TyList(type::IntTy::Instance()), type::IntTy::Instance()));
+
+//   venv_->Enter(sym::Symbol::UniqueSymbol("string_equal"), 
+//                 new env::FunEntry(level, label, new type::TyList({type::StringTy::Instance(), type::StringTy::Instance()}), type::IntTy::Instance()));
 
   venv_->Enter(sym::Symbol::UniqueSymbol("flush"),
                new env::FunEntry(level, label, new type::TyList(),

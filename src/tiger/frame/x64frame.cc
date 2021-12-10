@@ -5,8 +5,46 @@ extern frame::RegManager *reg_manager;
 namespace frame {
 
 /* TODO: Put your lab5 code here */
+X64Frame::X64Frame(temp::Label* name, std::list<bool> escapes) : Frame(name, escapes) {
+  this->s_offset = -frame::wordsize;
+  this->formals = new AccessList();
 
-/* TODO: Put your lab5 code here */
+  for (auto escape : escapes) {
+    this->formals->PushBack(allocLocal(escape));
+  };
+
+  int i = 1;
+  viewShift = NULL;
+  for (auto& formal : formals->GetList()) {
+    tree::Exp* dstExp;
+    if (formal->kind_ == Access::INFRAME) {
+      dstExp = new tree::MemExp(new tree::BinopExp(tree::PLUS_OP, new tree::TempExp(reg_manager->RBP()), new tree::ConstExp(((frame::InFrameAccess*) formal)->offset)));
+    } else dstExp = new tree::TempExp(((frame::InRegAccess*) formal)->reg);
+
+    tree::Stm* stm;
+    switch (i)
+    {
+    case 1: case 2: case 3: case 4: case 5: case 6:
+    {
+      stm = new tree::MoveStm(dstExp, new tree::TempExp(reg_manager->GetNthArg(i)));
+      break;
+    }
+    default:
+    {
+      stm = new tree::MoveStm(dstExp, new tree::MemExp(new tree::BinopExp(tree::BinOp::PLUS_OP, new tree::TempExp(reg_manager->RBP()), new tree::ConstExp((i - 6) * frame::wordsize))));
+      break;
+    }
+    };
+    if (viewShift == nullptr) {
+      viewShift = new tree::StmList(stm);
+    } else {
+      viewShift->Append(stm);
+    };
+    i++;
+  };
+  return;
+};
+
 
 Access* X64Frame::allocLocal(bool escape) {
   Access* local = NULL;
@@ -24,31 +62,31 @@ tree::Exp* externalCall(std::string s, tree::ExpList* args) {
   return new tree::CallExp(new tree::NameExp(temp::LabelFactory::NamedLabel(s)), args);
 };
 
-tree::Stm* procEntryExit1(Frame* frame, tree::Stm* stm) {
+tree::Stm* ProcEntryExit1(Frame* frame, tree::Stm* stm) {
   int num = 1;
 
   tree::Stm* viewshift = new tree::ExpStm(new tree::ConstExp(0));
   
   auto formal_list = frame->formals->GetList();
 
-  for (auto ele : formal_list) {
-    if (reg_manager->GetNthReg(num));
-      viewshift = new tree::SeqStm(viewshift, new tree::MoveStm(ele->ToExp(new tree::TempExp(reg_manager->FramePointer())), new tree::TempExp(reg_manager->GetNthArg(num))));
+  for (auto formal : formal_list) {
+    if (reg_manager->GetNthArg(num));
+      viewshift = new tree::SeqStm(viewshift, new tree::MoveStm(formal->ToExp(new tree::TempExp(reg_manager->FramePointer())), new tree::TempExp(reg_manager->GetNthArg(num))));
     num++;
   };
   return new tree::SeqStm(viewshift, stm);
 };
 
-assem::InstrList* procEntryExit2(assem::InstrList* body) {
+assem::InstrList* ProcEntryExit2(assem::InstrList* body) {
   static temp::TempList* retlist = NULL;
   if (!retlist)
     retlist = new temp::TempList(reg_manager->ReturnValue());
-  // assem::OperInstr* ele = new assem::OperInstr("", NULL, retlist, new assem::Targets(NULL));
-  // body->Append(ele);
+  assem::OperInstr* ele = new assem::OperInstr("", NULL, retlist, new assem::Targets(NULL));
+  body->Append(ele);
   return body;
 };
 
-assem::Proc* procEntryExit3(frame::Frame* frame, assem::InstrList* body) {
+assem::Proc* ProcEntryExit3(frame::Frame* frame, assem::InstrList* body) {
   static char instr[256];
 
   std::string prolog;
@@ -56,12 +94,14 @@ assem::Proc* procEntryExit3(frame::Frame* frame, assem::InstrList* body) {
   prolog = std::string(instr);
   sprintf(instr, "%s:\n", frame->label->Name(). c_str());
   prolog.append(std::string(instr));
-  sprintf(instr, "\tsubq $%s_framesize, %%rsp\n", frame->label->Name().c_str());
+  sprintf(instr, "subq $%d, %%rsp\n", -frame->s_offset);
+  // sprintf(instr, "subq %s_framesize, %%rsp\n", frame->label->Name().c_str());
   prolog.append(std::string(instr));
 
-  sprintf(instr, "\taddq $%s_framesize, %%rsp\n", frame->label->Name().c_str());
+  sprintf(instr, "addq $%d, %%rsp\n", -frame->s_offset);
+  // sprintf(instr, "addq %s_framesize, %%rsp\n", frame->label->Name().c_str());
   std::string epilog = std::string(instr);
-  epilog.append(std::string("\tret\n"));
+  epilog.append(std::string("retq\n"));
   return new assem::Proc(prolog, body, epilog);
 };
 
@@ -72,21 +112,21 @@ temp::TempList* X64RegManager::Registers() {
   
   templist = new temp::TempList();
 
-  templist->Append(rax);
-  templist->Append(rdi);
-  templist->Append(rsi);
-  templist->Append(rdx);
-  templist->Append(rcx);
-  templist->Append(r8);
-  templist->Append(r9);
-  templist->Append(r10);
-  templist->Append(r11);
-  templist->Append(rbx);
-  templist->Append(rbp);
-  templist->Append(r12);
-  templist->Append(r13);
-  templist->Append(r14);
-  templist->Append(r15);
+  templist->Append(RAX());
+  templist->Append(RDI());
+  templist->Append(RSI());
+  templist->Append(RDX());
+  templist->Append(RCX());
+  templist->Append(R8());
+  templist->Append(R9());
+  templist->Append(R10());
+  templist->Append(R11());
+  templist->Append(RBX());
+  templist->Append(RBP());
+  templist->Append(R12());
+  templist->Append(R13());
+  templist->Append(R14());
+  templist->Append(R15());
   return templist;
 };
 
@@ -96,12 +136,12 @@ temp::TempList* X64RegManager::ArgRegs() {
   if (templist) return templist;
 
   templist = new temp::TempList();
-  templist->Append(rdi);
-  templist->Append(rsi);
-  templist->Append(rdx);
-  templist->Append(rcx);
-  templist->Append(r8);
-  templist->Append(r9);
+  templist->Append(RDI());
+  templist->Append(RSI());
+  templist->Append(RDX());
+  templist->Append(RCX());
+  templist->Append(R8());
+  templist->Append(R9());
   return templist;
 };
 
@@ -111,15 +151,15 @@ temp::TempList* X64RegManager::CallerSaves() {
   if (templist) return templist;
 
   templist = new temp::TempList();
-  templist->Append(rax);
-  templist->Append(rdi);
-  templist->Append(rsi);
-  templist->Append(rdx);
-  templist->Append(rcx);
-  templist->Append(r8);
-  templist->Append(r9);
-  templist->Append(r10);
-  templist->Append(r11);
+  templist->Append(RAX());
+  templist->Append(RDI());
+  templist->Append(RSI());
+  templist->Append(RDX());
+  templist->Append(RCX());
+  templist->Append(R8());
+  templist->Append(R9());
+  templist->Append(R10());
+  templist->Append(R11());
   return templist;
 };
 temp::TempList* X64RegManager::CalleeSaves() {
@@ -128,16 +168,17 @@ temp::TempList* X64RegManager::CalleeSaves() {
   if (templist) return templist;
 
   templist = new temp::TempList();
-  templist->Append(rbx);
-  templist->Append(rbp);
-  templist->Append(r12);
-  templist->Append(r13);
-  templist->Append(r14);
-  templist->Append(r15);
+  templist->Append(RBX());
+  templist->Append(RBP());
+  templist->Append(R12());
+  templist->Append(R13());
+  templist->Append(R14());
+  templist->Append(R15());
   return templist; 
 };
 
 temp::TempList* X64RegManager::ReturnSink() {
+  assert(0);
   return NULL;
 };
 
@@ -146,49 +187,16 @@ int X64RegManager::WordSize() {
 };
 
 temp::Temp* X64RegManager::FramePointer() {
-  return rbp;
+  return RBP();
 };
 
 temp::Temp* X64RegManager::StackPointer() {
-  return rsp;
+  return RSP();
 };
 
 temp::Temp* X64RegManager::ReturnValue() {
-  return rax;
+  return RAX();
 };
 
-temp::Temp* X64RegManager::GetNthReg(int i) {
-  switch (i) {
-    case 1: return rax;
-    case 2: return rdi;
-    case 3: return rsi;
-    case 4: return rdx;
-    case 5: return rcx;
-    case 6: return r8;
-    case 7: return r9;
-    case 8: return r10;
-    case 9: return r11;
-    case 10: return rbx;
-    case 11: return rbp;
-    case 12: return r12;
-    case 13: return r13;
-    case 14: return r14;
-    case 15: return r15;
-    case 16: return rsp;
-    default: return NULL;
-  }
-};
-
-temp::Temp* X64RegManager::GetNthArg(int i) {
-  switch(i) {
-    case 1: return rdi;
-    case 2: return rsi;
-    case 3: return rdx;
-    case 4: return rcx;
-    case 5: return r8;
-    case 6: return r9;
-    default: return NULL;
-  };
-};
 /* TODO: Put your lab5 code here */
 } // namespace frame

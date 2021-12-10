@@ -64,8 +64,12 @@ tree::Stm* ProcEntryExit1(Frame* frame, tree::Stm* stm) {
   auto formal_list = frame->formals->GetList();
   
   for (auto formal : formal_list) {
-    if (reg_manager->GetNthArg(num));
+    if (reg_manager->GetNthArg(num))
       viewshift = new tree::SeqStm(viewshift, new tree::MoveStm(formal->ToExp(new tree::TempExp(reg_manager->FramePointer())), new tree::TempExp(reg_manager->GetNthArg(num))));
+    else {
+      frame->s_offset -= wordsize;
+      viewshift = new tree::SeqStm(new tree::MoveStm(formal->ToExp(new tree::TempExp(reg_manager->FramePointer())), new tree::MemExp(new tree::BinopExp(tree::BinOp::PLUS_OP, new tree::TempExp(reg_manager->RBP()), new tree::ConstExp((6 - num) * frame::wordsize)))), viewshift);
+    }
     num++;
   };
   return new tree::SeqStm(viewshift, stm);

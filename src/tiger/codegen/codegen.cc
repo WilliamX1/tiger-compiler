@@ -507,7 +507,7 @@ temp::TempList *ExpList::MunchArgs(assem::InstrList &instr_list, std::string_vie
       // std::string assem = stream.str();      
       // instr_list.Append(new assem::OperInstr(assem, NULL, new temp::TempList(reg_manager->StackPointer()), NULL));
       std::stringstream stream;
-      stream << "movq `s0, " << (6 - i) * frame::wordsize << "(`s1)";
+      stream << "movq `s0, " << - frame::wordsize + (6 - i) * frame::wordsize << "(`s1)";
       std::string assem = stream.str();
       instr_list.Append(new assem::OperInstr(assem, NULL, new temp::TempList({arg, reg_manager->RSP()}), NULL));
       // instr_list.Append(new assem::OperInstr("movq `s0, (`s1)", NULL, new temp::TempList({arg, reg_manager->StackPointer()}), NULL));

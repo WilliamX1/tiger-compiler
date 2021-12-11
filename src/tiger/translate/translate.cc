@@ -83,11 +83,12 @@ public:
   }
   [[nodiscard]] Cx UnCx(err::ErrorMsg *errormsg) const override {
     /* TODO: Put your lab5 code here */
-    temp::Label *t = temp::LabelFactory::NewLabel(), *f = temp::LabelFactory::NewLabel();
+    // temp::Label *t = temp::LabelFactory::NewLabel(), *f = temp::LabelFactory::NewLabel();
 
-    tree::CjumpStm* stm = new tree::CjumpStm(tree::RelOp::NE_OP, exp_, new tree::ConstExp(0), t, f);
-    temp::Label** trues = &t;
-    temp::Label** falses = &f;
+    // tree::CjumpStm* stm = new tree::CjumpStm(tree::RelOp::NE_OP, exp_, new tree::ConstExp(0), t, f);
+    tree::CjumpStm* stm = new tree::CjumpStm(tree::RelOp::NE_OP, exp_, new tree::ConstExp(0), NULL, NULL);
+    temp::Label** trues = &stm->true_label_;
+    temp::Label** falses = &stm->false_label_;
     return Cx(trues, falses, stm);
   }
 };
@@ -134,7 +135,10 @@ public:
   }
   [[nodiscard]] tree::Stm *UnNx() const override {
     /* TODO: Put your lab5 code here */ 
-    return new tree::ExpStm(UnEx());
+    // return new tree::ExpStm(UnEx());
+    temp::Label* label = temp::LabelFactory::NewLabel();
+    *cx_.trues_ = label; *cx_.falses_ = label;
+    return new tree::SeqStm(cx_.stm_, new tree::LabelStm(label));
   }
   [[nodiscard]] Cx UnCx(err::ErrorMsg *errormsg) const override { 
     /* TODO: Put your lab5 code here */
@@ -625,9 +629,9 @@ tr::ExpAndTy *IfExp::Translate(env::VEnvPtr venv, env::TEnvPtr tenv,
 
     tr::Cx testc = check_test->exp_->UnCx(errormsg);
     temp::Temp* r = temp::TempFactory::NewTemp();
-    temp::Label* true_label = temp::LabelFactory::NewLabel();
-    temp::Label* false_label = temp::LabelFactory::NewLabel();
-    temp::Label* meeting = temp::LabelFactory::NewLabel();
+    temp::Label* true_label = temp::LabelFactory::NewLabel(); assert(true_label);
+    temp::Label* false_label = temp::LabelFactory::NewLabel(); assert(false_label);
+    temp::Label* meeting = temp::LabelFactory::NewLabel(); assert(meeting);
 
     *testc.trues_ = true_label; *testc.falses_ = false_label;
 

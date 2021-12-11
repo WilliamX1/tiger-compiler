@@ -1,8 +1,5 @@
 let
-	function patchtest(a:int, b:int, c:int, d:int, e:int, f:int, g:int, h:int, i:int, j:int) = 
-		(printi(a);printi(b);printi(c);printi(d);printi(e);printi(f);printi(g);printi(h);printi(i);printi(j))
+	var a := getchar()
 in
-	(
-		patchtest(1,2,3,4,5,6,7,8,9,12) /* 67 */
-	)
+	print(chr(ord(a) + ord("4")))
 end

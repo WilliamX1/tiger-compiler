@@ -207,6 +207,8 @@ class MemExp : public Exp {
 public:
   Exp *exp_;
 
+  // bool flag; /* used to detact whether is */
+
   explicit MemExp(Exp *exp) : Exp(MEM), exp_(exp) {}
   ~MemExp() override;
 

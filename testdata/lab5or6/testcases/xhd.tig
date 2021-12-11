@@ -1,5 +1,5 @@
 let
 	var a := getchar()
 in
-	print(chr(ord(a) + ord("4")))
+	printi(ord(a) + ord("4"))
 end

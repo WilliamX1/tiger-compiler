@@ -173,7 +173,8 @@ tree::Exp* StaticLink(tr::Level* target, tr::Level* level) {
   tree::Exp* staticlink = new tree::TempExp(reg_manager->FramePointer()); /* currently using FP() */
   while (level != target) {
     // staticlink = level->frame_->formals->GetList().front()->ToExp(staticlink);
-    staticlink = new tree::MemExp(new tree::BinopExp(tree::PLUS_OP, staticlink, new tree::ConstExp(level->frame_->s_offset)));
+    // staticlink = new tree::MemExp(new tree::BinopExp(tree::PLUS_OP, staticlink, new tree::ConstExp(level->frame_->s_offset)));
+    staticlink = new tree::MemExp(new tree::BinopExp(tree::PLUS_OP, staticlink, new tree::ConstExp(-level->frame_->s_offset)));    
     level = level->parent_;
   }
   staticlink = new tree::MemExp(new tree::BinopExp(tree::PLUS_OP, staticlink, new tree::ConstExp(level->frame_->s_offset)));

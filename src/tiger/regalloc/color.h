@@ -17,6 +17,11 @@ struct Result {
 
 class Color {
   /* TODO: Put your lab6 code here */
+public:
+  Color(fg::FGraph* flow_graph) 
+  : flow_graph_(flow_graph) {};
+private:
+  fg::FGraph* flow_graph_;
 };
 } // namespace col
 

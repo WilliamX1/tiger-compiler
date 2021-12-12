@@ -7,6 +7,8 @@
 #include "tiger/translate/translate.h"
 #include "tiger/semant/semant.h"
 
+frame::RegManager* reg_manager;
+frame::Frags *frags;
 
 int main(int argc, char **argv) {
   std::string_view fname;

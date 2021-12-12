@@ -1,5 +1,0 @@
-let
-	var a := getchar()
-in
-	printi(ord(a) + ord("4"))
-end

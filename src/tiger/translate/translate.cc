@@ -83,9 +83,6 @@ public:
   }
   [[nodiscard]] Cx UnCx(err::ErrorMsg *errormsg) const override {
     /* TODO: Put your lab5 code here */
-    // temp::Label *t = temp::LabelFactory::NewLabel(), *f = temp::LabelFactory::NewLabel();
-
-    // tree::CjumpStm* stm = new tree::CjumpStm(tree::RelOp::NE_OP, exp_, new tree::ConstExp(0), t, f);
     tree::CjumpStm* stm = new tree::CjumpStm(tree::RelOp::NE_OP, exp_, new tree::ConstExp(0), NULL, NULL);
     temp::Label** trues = &stm->true_label_;
     temp::Label** falses = &stm->false_label_;
@@ -162,8 +159,6 @@ void ProgTr::Translate() {
   assert(errormsg_.get() != NULL);
 
   absyn_tree_->Translate(venv_.get(), tenv_.get(), main_level_.get(), main_label_, errormsg_.get());
-
-  
   return;
 }
 
@@ -172,8 +167,6 @@ tree::Exp* StaticLink(tr::Level* target, tr::Level* level) {
   /* find staticlink level */
   tree::Exp* staticlink = new tree::TempExp(reg_manager->FramePointer()); /* currently using FP() */
   while (level != target) {
-    // staticlink = level->frame_->formals->GetList().front()->ToExp(staticlink);
-    // staticlink = new tree::MemExp(new tree::BinopExp(tree::PLUS_OP, staticlink, new tree::ConstExp(level->frame_->s_offset)));
     staticlink = new tree::MemExp(new tree::BinopExp(tree::PLUS_OP, staticlink, new tree::ConstExp(-level->frame_->s_offset)));    
     level = level->parent_;
   }
@@ -402,7 +395,6 @@ tr::ExpAndTy *CallExp::Translate(env::VEnvPtr venv, env::TEnvPtr tenv,
     exp = new tr::ExExp(frame::externalCall(temp::LabelFactory::LabelString(func_), list));
   else {
     // list->Insert(tr::StaticLink(fun_entry->level_->parent_, level));
-
     exp = new tr::ExExp(new tree::CallExp(new tree::NameExp(func_), list));
   };
   assert(exp != NULL);
@@ -785,51 +777,6 @@ tr::ExpAndTy *ForExp::Translate(env::VEnvPtr venv, env::TEnvPtr tenv,
   LOG("End Translate ForExp level %s symvar %s\n escape ? %d", level->frame_->label->Name().c_str(), var_->Name().c_str(), escape_);                                                                                         
   return new tr::ExpAndTy(new tr::NxExp(ret), type::VoidTy::Instance());
 }
-// tr::ExpAndTy *ForExp::Translate(env::VEnvPtr venv, env::TEnvPtr tenv,
-//                                 tr::Level *level, temp::Label *label,
-//                                 err::ErrorMsg *errormsg) const {
-//   LOG("Translate ForExp level %s symvar %s\n escape ? %d", level->frame_->label->Name().c_str(), var_->Name().c_str(), escape_);                                                                                         
-//   static int cnt = 0;
-//   cnt++;
-//   /* TODO: Put your lab5 code here */
-//   tr::Exp* exp = NULL;
-//   type::Ty* ty = type::VoidTy::Instance();
-
-//   tr::ExpAndTy* check_lo = lo_->Translate(venv, tenv, level, label, errormsg); assert(check_lo != NULL);
-//   tr::ExpAndTy* check_hi = hi_->Translate(venv, tenv, level, label, errormsg); assert(check_hi != NULL);
-//   if (check_lo->ty_->kind_ != type::Ty::Kind::INT) errormsg->Error(lo_->pos_, "for exp's range type is not integer");
-//   if (check_hi->ty_->kind_ != type::Ty::Kind::INT) errormsg->Error(hi_->pos_, "for exp's range type is not integer");
-
-//   std::string uni_name = "__limit_var__" + std::to_string(cnt);
-//   temp::Label* uni = sym::Symbol::UniqueSymbol(std::string_view(uni_name.c_str()));
-
-//   venv->BeginScope();
-//   venv->Enter(var_, new env::VarEntry(tr::Access::AllocLocal(level, escape_), check_lo->ty_));
-
-//   tr::ExpAndTy* check_body = body_->Translate(venv, tenv, level, label, errormsg); assert(check_body != NULL);
-//   if (check_body->ty_->kind_ != type::Ty::Kind::VOID) {
-//     errormsg->Error(body_->pos_, "for body must produce no value");
-//     return new tr::ExpAndTy(exp, ty);
-//   };
-//   venv->EndScope();
-
-//   absyn::DecList* declist = new absyn::DecList();
-//   declist->Append(new absyn::VarDec(0, var_, sym::Symbol::UniqueSymbol("int"), lo_));
-//   declist->Append(new absyn::VarDec(0, uni, sym::Symbol::UniqueSymbol("int"), hi_));
-  
-//   absyn::ExpList* bodylist = new absyn::ExpList();
-//   bodylist->Append(body_);
-//   bodylist->Append(new absyn::IfExp(0, new absyn::OpExp(0, absyn::Oper::EQ_OP, new absyn::VarExp(0, new absyn::SimpleVar(0, var_)), new absyn::VarExp(0, new absyn::SimpleVar(0, uni))), new absyn::BreakExp(0), NULL));
-//   bodylist->Append(new absyn::AssignExp(0, new absyn::SimpleVar(0, var_), new absyn::OpExp(0, absyn::PLUS_OP, new absyn::VarExp(0, new absyn::SimpleVar(0, var_)), new absyn::IntExp(0, 1))));
-
-//   absyn::WhileExp* body = new absyn::WhileExp(0, new absyn::OpExp(0, absyn::Oper::LE_OP, new absyn::VarExp(0, new absyn::SimpleVar(0, var_)), new absyn::VarExp(0, new absyn::SimpleVar(0, uni))),
-//                       new absyn::SeqExp(0, bodylist));
-
-//   absyn::Exp* forexp_to_letexp = new absyn::LetExp(0, declist, body); assert(forexp_to_letexp != NULL);
-//   tr::ExpAndTy* res = forexp_to_letexp->Translate(venv, tenv, level, label, errormsg); assert(res != NULL);
-//   LOG("End Translate ForExp level %s symvar %s\n escape ? %d", level->frame_->label->Name().c_str(), var_->Name().c_str(), escape_);                                                                                         
-//   return res;
-// }
 
 tr::ExpAndTy *BreakExp::Translate(env::VEnvPtr venv, env::TEnvPtr tenv,
                                   tr::Level *level, temp::Label *label,

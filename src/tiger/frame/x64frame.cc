@@ -39,7 +39,6 @@ X64Frame::X64Frame(temp::Label* name, std::list<bool> escapes) : Frame(name, esc
   return;
 };
 
-
 Access* X64Frame::allocLocal(bool escape) {
   Access* local = NULL;
   if (escape) {
@@ -73,11 +72,6 @@ tree::Stm* ProcEntryExit1(Frame* frame, tree::Stm* stm) {
     num++;
   };
   return new tree::SeqStm(viewshift, stm);
-  // tree::Stm* result = new tree::ExpStm(new tree::ConstExp(0));
-  // for (auto& view : frame->viewShift->GetList()) {
-    // result = new tree::SeqStm(result, view);
-  // };
-  // return new tree::SeqStm(result, stm);;
 };
 
 assem::InstrList* ProcEntryExit2(assem::InstrList* body) {
@@ -98,11 +92,9 @@ assem::Proc* ProcEntryExit3(frame::Frame* frame, assem::InstrList* body) {
   sprintf(instr, "%s:\n", frame->label->Name(). c_str());
   prolog.append(std::string(instr));
   sprintf(instr, "subq $%d, %%rsp\n", -frame->s_offset);
-  // sprintf(instr, "subq %s_framesize, %%rsp\n", frame->label->Name().c_str());
   prolog.append(std::string(instr));
 
   sprintf(instr, "addq $%d, %%rsp\n", -frame->s_offset);
-  // sprintf(instr, "addq %s_framesize, %%rsp\n", frame->label->Name().c_str());
   std::string epilog = std::string(instr);
   epilog.append(std::string("retq\n"));
   return new assem::Proc(prolog, body, epilog);

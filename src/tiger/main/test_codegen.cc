@@ -51,7 +51,7 @@ int main(int argc, char **argv) {
       esc_finder.FindEscape();
       absyn_tree = esc_finder.TransferAbsynTree();
     }
-
+    fprintf(stderr, "----BEGIN TRANSLATE IR TREE----");
     {
       // Lab 5: translate IR tree
       TigerLog("-------====Translate=====-----\n");
@@ -59,15 +59,17 @@ int main(int argc, char **argv) {
       prog_tr.Translate();
       errormsg = prog_tr.TransferErrormsg();
     }
-
+    fprintf(stderr, "----END TRANSLATE IR TREE----\n");
     if (errormsg->AnyErrors())
       return 1; // Don't continue if error occurrs
   }
 
   {
     // Output assembly
+    fprintf(stderr, "----BEGIN ASSEM----\n");
     output::AssemGen assem_gen(fname);
     assem_gen.GenAssem(false);
+    fprintf(stderr, "----END ASSEM----\n");
   }
 
   return 0;

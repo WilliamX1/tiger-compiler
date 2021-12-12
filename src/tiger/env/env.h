@@ -16,7 +16,11 @@ class EnvEntry {
 public:
   bool readonly_;
 
-  explicit EnvEntry(bool readonly = true) : readonly_(readonly) {}
+  enum Kind {VAR, FUN};
+
+  Kind kind_;
+
+  explicit EnvEntry(Kind kind, bool readonly = true) : kind_(kind), readonly_(readonly) {}
   virtual ~EnvEntry() = default;
 };
 
@@ -27,11 +31,11 @@ public:
 
   // For lab4(semantic analysis) only
   explicit VarEntry(type::Ty *ty, bool readonly = false)
-      : EnvEntry(readonly), ty_(ty), access_(nullptr){};
+      : EnvEntry(VAR, readonly), ty_(ty), access_(nullptr){};
 
   // For lab5(translate IR tree)
   VarEntry(tr::Access *access, type::Ty *ty, bool readonly = false)
-      : EnvEntry(readonly), ty_(ty), access_(access){};
+      : EnvEntry(VAR, readonly), ty_(ty), access_(access){};
 };
 
 class FunEntry : public EnvEntry {
@@ -43,12 +47,12 @@ public:
 
   // For lab4(semantic analysis) only
   FunEntry(type::TyList *formals, type::Ty *result)
-      : formals_(formals), result_(result), level_(nullptr), label_(nullptr) {}
+      : EnvEntry(FUN, true), formals_(formals), result_(result), level_(nullptr), label_(nullptr) {}
 
   // For lab5(translate IR tree)
   FunEntry(tr::Level *level, temp::Label *label, type::TyList *formals,
            type::Ty *result)
-      : formals_(formals), result_(result), level_(level), label_(label) {}
+      : EnvEntry(FUN, true), formals_(formals), result_(result), level_(level), label_(label) {}
 };
 
 using VEnv = sym::Table<env::EnvEntry>;

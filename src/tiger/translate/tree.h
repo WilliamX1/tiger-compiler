@@ -16,7 +16,13 @@ class Canon;
 } // namespace canon
 
 namespace assem {
+class Targets;
+class Instr;
+class OperInstr;
+class LabelInstr;
+class MoveInstr;
 class InstrList;
+class Proc;
 } // namespace assem
 
 namespace frame {
@@ -66,6 +72,13 @@ enum RelOp {
 
 class Stm {
 public:
+
+  enum Kind {SEQ, LABEL, JUMP, CJUMP, MOVE, EXP};
+
+  Kind kind_;
+
+  Stm(Kind kind_): kind_(kind_) {};
+
   virtual ~Stm() = default;
 
   virtual void Print(FILE *out, int d) const = 0;
@@ -81,7 +94,7 @@ class SeqStm : public Stm {
 public:
   Stm *left_, *right_;
 
-  SeqStm(Stm *left, Stm *right) : left_(left), right_(right) { assert(left); }
+  SeqStm(Stm *left, Stm *right) : Stm(SEQ), left_(left), right_(right) { assert(left); }
   ~SeqStm() override;
 
   void Print(FILE *out, int d) const override;
@@ -93,7 +106,7 @@ class LabelStm : public Stm {
 public:
   temp::Label *label_;
 
-  explicit LabelStm(temp::Label *label) : label_(label) {}
+  explicit LabelStm(temp::Label *label) : Stm(LABEL), label_(label) {}
   ~LabelStm() override;
 
   void Print(FILE *out, int d) const override;
@@ -104,10 +117,10 @@ public:
 class JumpStm : public Stm {
 public:
   NameExp *exp_;
-  std::vector<temp::Label *> *jumps_;
+  std::vector<temp::Label* > *jumps_;
 
-  JumpStm(NameExp *exp, std::vector<temp::Label *> *jumps)
-      : exp_(exp), jumps_(jumps) {}
+  explicit JumpStm(NameExp *exp, std::vector<temp::Label* > *jumps)
+      : Stm(JUMP), exp_(exp), jumps_(jumps) {}
   ~JumpStm() override;
 
   void Print(FILE *out, int d) const override;
@@ -123,7 +136,7 @@ public:
 
   CjumpStm(RelOp op, Exp *left, Exp *right, temp::Label *true_label,
            temp::Label *false_label)
-      : op_(op), left_(left), right_(right), true_label_(true_label),
+      : Stm(CJUMP), op_(op), left_(left), right_(right), true_label_(true_label),
         false_label_(false_label) {}
   ~CjumpStm() override;
 
@@ -136,7 +149,7 @@ class MoveStm : public Stm {
 public:
   Exp *dst_, *src_;
 
-  MoveStm(Exp *dst, Exp *src) : dst_(dst), src_(src) {}
+  MoveStm(Exp *dst, Exp *src) : Stm(MOVE), dst_(dst), src_(src) {}
   ~MoveStm() override;
 
   void Print(FILE *out, int d) const override;
@@ -148,7 +161,7 @@ class ExpStm : public Stm {
 public:
   Exp *exp_;
 
-  explicit ExpStm(Exp *exp) : exp_(exp) {}
+  explicit ExpStm(Exp *exp) : Stm(EXP), exp_(exp) {}
   ~ExpStm() override;
 
   void Print(FILE *out, int d) const override;
@@ -162,6 +175,13 @@ public:
 
 class Exp {
 public:
+
+  enum Kind {BINOP, MEM, TEMP, ESEQ, NAME, CONST, CALL};
+
+  Kind kind_;
+
+  Exp(Kind kind_): kind_(kind_) {};
+
   virtual ~Exp() = default;
 
   virtual void Print(FILE *out, int d) const = 0;
@@ -175,7 +195,7 @@ public:
   Exp *left_, *right_;
 
   BinopExp(BinOp op, Exp *left, Exp *right)
-      : op_(op), left_(left), right_(right) {}
+      : Exp(BINOP), op_(op), left_(left), right_(right) {}
   ~BinopExp() override;
 
   void Print(FILE *out, int d) const override;
@@ -187,7 +207,9 @@ class MemExp : public Exp {
 public:
   Exp *exp_;
 
-  explicit MemExp(Exp *exp) : exp_(exp) {}
+  // bool flag; /* used to detact whether is */
+
+  explicit MemExp(Exp *exp) : Exp(MEM), exp_(exp) {}
   ~MemExp() override;
 
   void Print(FILE *out, int d) const override;
@@ -199,7 +221,7 @@ class TempExp : public Exp {
 public:
   temp::Temp *temp_;
 
-  explicit TempExp(temp::Temp *temp) : temp_(temp) {}
+  explicit TempExp(temp::Temp *temp) : Exp(TEMP), temp_(temp) {}
   ~TempExp() override;
 
   void Print(FILE *out, int d) const override;
@@ -212,7 +234,7 @@ public:
   Stm *stm_;
   Exp *exp_;
 
-  EseqExp(Stm *stm, Exp *exp) : stm_(stm), exp_(exp) {}
+  EseqExp(Stm *stm, Exp *exp) : Exp(ESEQ), stm_(stm), exp_(exp) {}
   ~EseqExp() override;
 
   void Print(FILE *out, int d) const override;
@@ -224,7 +246,7 @@ class NameExp : public Exp {
 public:
   temp::Label *name_;
 
-  explicit NameExp(temp::Label *name) : name_(name) {}
+  explicit NameExp(temp::Label *name) : Exp(NAME), name_(name) {}
   ~NameExp() override;
 
   void Print(FILE *out, int d) const override;
@@ -236,7 +258,7 @@ class ConstExp : public Exp {
 public:
   int consti_;
 
-  explicit ConstExp(int consti) : consti_(consti) {}
+  explicit ConstExp(int consti) : Exp(CONST), consti_(consti) {}
   ~ConstExp() override;
 
   void Print(FILE *out, int d) const override;
@@ -249,7 +271,7 @@ public:
   Exp *fun_;
   ExpList *args_;
 
-  CallExp(Exp *fun, ExpList *args) : fun_(fun), args_(args) {}
+  CallExp(Exp *fun, ExpList *args) : Exp(CALL), fun_(fun), args_(args) {}
   ~CallExp() override;
 
   void Print(FILE *out, int d) const override;
@@ -260,6 +282,7 @@ public:
 class ExpList {
 public:
   ExpList() = default;
+  ExpList(Exp* exp) : exp_list_({exp}) {} 
   ExpList(std::initializer_list<Exp *> list) : exp_list_(list) {}
 
   void Append(Exp *exp) { exp_list_.push_back(exp); }
@@ -267,7 +290,7 @@ public:
   std::list<Exp *> &GetNonConstList() { return exp_list_; }
   const std::list<Exp *> &GetList() { return exp_list_; }
   temp::TempList *MunchArgs(assem::InstrList &instr_list, std::string_view fs);
-
+  void UnMunchArgs(assem::InstrList &instr_list, std::string_view fs);
 private:
   std::list<Exp *> exp_list_;
 };
@@ -277,8 +300,10 @@ class StmList {
 
 public:
   StmList() = default;
+  StmList(Stm* stm) : stm_list_({stm}) {};
 
   const std::list<Stm *> &GetList() { return stm_list_; }
+  void Append(Stm* stm) { stm_list_.push_back(stm); };
   void Linear(Stm *stm);
   void Print(FILE *out) const;
 
@@ -289,6 +314,7 @@ private:
 RelOp NotRel(RelOp);  // a op b == not(a NotRel(op) b)
 RelOp Commute(RelOp); // a op b == b Commute(op) a
 
+MemExp* NewMemPlus_Const(Exp* left, int right);
 } // namespace tree
 
 #endif // TIGER_TRANSLATE_TREE_H_

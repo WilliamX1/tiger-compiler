@@ -18,6 +18,12 @@ public:
 
 class Instr {
 public:
+  enum Kind { OPER, LABEL, MOVE };
+
+  Kind kind_;
+
+  Instr(Kind kind_) : kind_(kind_) {};
+
   virtual ~Instr() = default;
 
   virtual void Print(FILE *out, temp::Map *m) const = 0;
@@ -33,7 +39,7 @@ public:
 
   OperInstr(std::string assem, temp::TempList *dst, temp::TempList *src,
             Targets *jumps)
-      : assem_(std::move(assem)), dst_(dst), src_(src), jumps_(jumps) {}
+      : Instr(OPER), assem_(std::move(assem)), dst_(dst), src_(src), jumps_(jumps) {}
 
   void Print(FILE *out, temp::Map *m) const override;
   [[nodiscard]] temp::TempList *Def() const override;
@@ -46,7 +52,7 @@ public:
   temp::Label *label_;
 
   LabelInstr(std::string assem, temp::Label *label)
-      : assem_(std::move(assem)), label_(label) {}
+      : Instr(LABEL), assem_(std::move(assem)), label_(label) {}
 
   void Print(FILE *out, temp::Map *m) const override;
   [[nodiscard]] temp::TempList *Def() const override;
@@ -59,7 +65,7 @@ public:
   temp::TempList *dst_, *src_;
 
   MoveInstr(std::string assem, temp::TempList *dst, temp::TempList *src)
-      : assem_(std::move(assem)), dst_(dst), src_(src) {}
+      : Instr(MOVE), assem_(std::move(assem)), dst_(dst), src_(src) {}
 
   void Print(FILE *out, temp::Map *m) const override;
   [[nodiscard]] temp::TempList *Def() const override;
@@ -69,6 +75,7 @@ public:
 class InstrList {
 public:
   InstrList() = default;
+  InstrList(std::initializer_list<Instr*> list_) : instr_list_(list_) {};
 
   void Print(FILE *out, temp::Map *m) const;
   void Append(assem::Instr *instr) { instr_list_.push_back(instr); }

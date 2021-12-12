@@ -14,14 +14,18 @@ void AssemGen::GenAssem(bool need_ra) {
   // Output proc
   phase = frame::Frag::Proc;
   fprintf(out_, ".text\n");
+  fprintf(stderr, "start output proc\n");
   for (auto &&frag : frags->GetList())
     frag->OutputAssem(out_, phase, need_ra);
 
+  fprintf(stderr, "end output proc\n");
+  fprintf(stderr, "start output string\n");
   // Output string
   phase = frame::Frag::String;
   fprintf(out_, ".section .rodata\n");
   for (auto &&frag : frags->GetList())
     frag->OutputAssem(out_, phase, need_ra);
+  fprintf(stderr, "edn output proc\n");
 }
 
 } // namespace output
@@ -62,13 +66,14 @@ void ProcFrag::OutputAssem(FILE *out, OutputPhase phase, bool need_ra) const {
 
     traces = canon.TransferTraces();
   }
-
   temp::Map *color = temp::Map::LayerMap(reg_manager->temp_map_, temp::Map::Name());
   {
     // Lab 5: code generation
     TigerLog("-------====Code generate=====-----\n");
     cg::CodeGen code_gen(frame_, std::move(traces));
+    fprintf(stderr, "start codegen\n");
     code_gen.Codegen();
+    fprintf(stderr, "end codegen\n");
     assem_instr = code_gen.TransferAssemInstr();
     TigerLog(assem_instr.get(), color);
   }
@@ -91,16 +96,35 @@ void ProcFrag::OutputAssem(FILE *out, OutputPhase phase, bool need_ra) const {
   assem::Proc *proc = frame::ProcEntryExit3(frame_, il);
   
   std::string proc_name = frame_->GetLabel();
+           frame_->label->Name().data());
+  fprintf(stderr, "start procEntryExit3\n");
+  assem::Proc *proc = frame::ProcEntryExit3(frame_, il);
+  fprintf(stderr, "end procEntryExit3\n");
+  // std::string proc_name = frame_->GetLabel();
+  assert(frame_);
+  assert(frame_->label);
+
+  std::string proc_name = frame_->label->Name();
+
+  fprintf(stderr, "proc_name: %s\n", proc_name.c_str());
 
   fprintf(out, ".globl %s\n", proc_name.data());
   fprintf(out, ".type %s, @function\n", proc_name.data());
-  // prologue
+  // prologue  
+  fprintf(stderr, "start prologue\n");
+  assert(proc);
+  assert(proc->prolog_);
   fprintf(out, "%s", proc->prolog_.data());
   // body
+  fprintf(stderr, "start body\n");
+  assert(proc->body_);
   proc->body_->Print(out, color);
   // epilog_
+  fprintf(stderr, "start epilog\n");
+  assert(proc->epilog_);
   fprintf(out, "%s", proc->epilog_.data());
   fprintf(out, ".size %s, .-%s\n", proc_name.data(), proc_name.data());
+  fprintf(stderr, "end end\n");
 }
 
 void StringFrag::OutputAssem(FILE *out, OutputPhase phase, bool need_ra) const {

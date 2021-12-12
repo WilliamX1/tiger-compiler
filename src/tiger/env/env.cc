@@ -121,7 +121,6 @@ void ProgTr::FillBaseVEnv() {
                         type::IntTy::Instance()});
   venv_->Enter(sym::Symbol::UniqueSymbol("substring"),
                new env::FunEntry(level, label, formals, result));
-
 }
 
 } // namespace tr

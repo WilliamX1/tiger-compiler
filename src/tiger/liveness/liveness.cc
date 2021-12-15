@@ -37,8 +37,11 @@ void MoveList::Delete(INodePtr src, INodePtr dst) {
 
 MoveList *MoveList::Union(MoveList *list) {
   auto *res = new MoveList();
+  for (auto move : move_list_) {
+    res->move_list_.push_back(move);
+  }
   for (auto move : list->GetList()) {
-    if (!Contain(move.first, move.second))
+    if (!res->Contain(move.first, move.second))
       res->move_list_.push_back(move);
   }
   return res;

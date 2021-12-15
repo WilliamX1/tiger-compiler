@@ -215,9 +215,13 @@ template <typename T> void NodeList<T>::CatList(NodeList<T> *nl) {
 
 template <typename T> NodeList<T> *NodeList<T>::Union(NodeList<T> *nl) {
   NodeList<T> *res = new NodeList<T>();
-  res->CatList(this);
-  res->CatList(nl);
-  res->node_list_.unique();
+  for (auto node : node_list_) {
+    res->Append(node);
+  }
+  for (auto node : nl->GetList()) {
+    if (!res->Contain(node))
+      res->Append(node);
+  }
   return res;
 }
 

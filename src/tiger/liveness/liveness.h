@@ -7,6 +7,8 @@
 #include "tiger/liveness/flowgraph.h"
 #include "tiger/util/graph.h"
 
+#include <algorithm>
+
 namespace live {
 
 using INode = graph::Node<temp::Temp>;
@@ -32,6 +34,7 @@ public:
   }
   MoveList *Union(MoveList *list);
   MoveList *Intersect(MoveList *list);
+  MoveList *Difference(MoveList *left, MoveList *right);
 
 private:
   std::list<std::pair<INodePtr, INodePtr>> move_list_;
@@ -67,6 +70,11 @@ private:
   void LiveMap();
   void InterfGraph();
 };
+
+temp::TempList* Union(temp::TempList* left, temp::TempList* right);
+temp::TempList* Difference(temp::TempList* left, temp::TempList* right);
+bool Equal(temp::TempList* left, temp::TempList* right);
+bool Contain(temp::TempList* container, temp::Temp* temp);
 
 } // namespace live
 

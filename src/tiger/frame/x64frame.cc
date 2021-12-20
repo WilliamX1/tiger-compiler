@@ -193,5 +193,25 @@ temp::Temp* X64RegManager::ReturnValue() {
   return RAX();
 };
 
+std::vector<std::string> X64RegManager::Colors() {
+  std::vector<std::string> res;
+  res.push_back("%rax");
+  res.push_back("%rdi");
+  res.push_back("%rsi");
+  res.push_back("%rdx");
+  res.push_back("%rcx");
+  res.push_back("%r8");
+  res.push_back("%r9");
+  res.push_back("%r10");
+  res.push_back("%r11");
+  res.push_back("%rbx");
+  res.push_back("%rbp");
+  res.push_back("%r12");
+  res.push_back("%r13");
+  res.push_back("%r14");
+  res.push_back("%r15");
+  return res;
+}
+
 /* TODO: Put your lab5 code here */
 } // namespace frame

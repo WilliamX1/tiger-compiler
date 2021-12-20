@@ -76,6 +76,7 @@ class InstrList {
 public:
   InstrList() = default;
   InstrList(std::initializer_list<Instr*> list_) : instr_list_(list_) {};
+  InstrList(Instr* instr) : instr_list_({instr}) {};
 
   void Print(FILE *out, temp::Map *m) const;
   void Append(assem::Instr *instr) { instr_list_.push_back(instr); }
@@ -85,8 +86,7 @@ public:
   }
   [[nodiscard]] const std::list<Instr *> &GetList() const {
     return instr_list_;
-  }
-
+  };
 private:
   std::list<Instr *> instr_list_;
 };

@@ -197,7 +197,8 @@ temp::Temp *BinopExp::Munch(assem::InstrList &instr_list, std::string_view fs) {
     } else {
       instr_list.Append(new assem::MoveInstr("movq `s0, `d0", new temp::TempList(r), new temp::TempList(e1temp)));
     };
-    instr_list.Append(new assem::OperInstr("addq `s0, `d0", new temp::TempList(r), new temp::TempList({e2temp, r}), NULL));
+    // instr_list.Append(new assem::OperInstr("addq `s0, `d0", new temp::TempList(r), new temp::TempList({e2temp, r}), NULL));
+    instr_list.Append(new assem::OperInstr("addq `s0, `d0", new temp::TempList(r), new temp::TempList(e2temp), NULL));
     break;
   }
   case tree::MINUS_OP: {
@@ -213,7 +214,8 @@ temp::Temp *BinopExp::Munch(assem::InstrList &instr_list, std::string_view fs) {
     } else {
       instr_list.Append(new assem::MoveInstr("movq `s0, `d0", new temp::TempList(r), new temp::TempList(e1temp)));
     };
-    instr_list.Append(new assem::OperInstr("subq `s0, `d0", new temp::TempList(r), new temp::TempList({e2temp, r}), NULL));
+    // instr_list.Append(new assem::OperInstr("subq `s0, `d0", new temp::TempList(r), new temp::TempList({e2temp, r}), NULL));
+    instr_list.Append(new assem::OperInstr("subq `s0, `d0", new temp::TempList(r), new temp::TempList(e2temp), NULL));
     break;
   }
   case tree::MUL_OP: {
@@ -224,7 +226,8 @@ temp::Temp *BinopExp::Munch(assem::InstrList &instr_list, std::string_view fs) {
     assert(e1temp != reg_manager->RBP());
     assert(e2temp != reg_manager->RBP());
     instr_list.Append(new assem::MoveInstr("movq `s0, `d0", new temp::TempList(reg_manager->RAX()), new temp::TempList(e1temp)));
-    instr_list.Append(new assem::OperInstr("imulq `s0", new temp::TempList(reg_manager->RAX()), new temp::TempList(e2temp), NULL));
+    // instr_list.Append(new assem::OperInstr("imulq `s0", new temp::TempList(reg_manager->RAX()), new temp::TempList(e2temp), NULL));
+    instr_list.Append(new assem::OperInstr("imulq `s0", NULL, new temp::TempList(e2temp), NULL));
     instr_list.Append(new assem::MoveInstr("movq `s0, `d0", new temp::TempList(r), new temp::TempList(reg_manager->RAX())));
     break;
   }
@@ -236,8 +239,10 @@ temp::Temp *BinopExp::Munch(assem::InstrList &instr_list, std::string_view fs) {
     assert(e1temp != reg_manager->RBP());
     assert(e2temp != reg_manager->RBP());
     instr_list.Append(new assem::MoveInstr("movq `s0, `d0", new temp::TempList(reg_manager->RAX()), new temp::TempList(e1temp)));
-    instr_list.Append(new assem::OperInstr("cqto", new temp::TempList({reg_manager->RDX(), reg_manager->RAX()}), new temp::TempList(reg_manager->RAX()), NULL));
-    instr_list.Append(new assem::OperInstr("idivq `s0", new temp::TempList({reg_manager->RDX(), reg_manager->RAX()}), new temp::TempList(e2temp), NULL));
+    // instr_list.Append(new assem::OperInstr("cqto", new temp::TempList({reg_manager->RDX(), reg_manager->RAX()}), new temp::TempList(reg_manager->RAX()), NULL));
+    instr_list.Append(new assem::OperInstr("cqto", NULL, NULL, NULL));
+    // instr_list.Append(new assem::OperInstr("idivq `s0", new temp::TempList({reg_manager->RDX(), reg_manager->RAX()}), new temp::TempList(e2temp), NULL));
+    instr_list.Append(new assem::OperInstr("idivq `s0", NULL, new temp::TempList(e2temp), NULL));
     instr_list.Append(new assem::MoveInstr("movq `s0, `d0", new temp::TempList(r), new temp::TempList(reg_manager->RAX())));
     break;
   }

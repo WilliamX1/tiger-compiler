@@ -77,14 +77,19 @@ void ProcFrag::OutputAssem(FILE *out, OutputPhase phase, bool need_ra) const {
     assem_instr = code_gen.TransferAssemInstr();
     TigerLog(assem_instr.get(), color);
   }
-
+  fprintf(stderr, "start il\n");
   assem::InstrList *il = assem_instr.get()->GetInstrList();
+  fprintf(stderr, "end il\n");
   
   if (need_ra) {
     // Lab 6: register allocation
     TigerLog("----====Register allocate====-----\n");
+    fprintf(stderr, "start init reg_allocator\n");
     ra::RegAllocator reg_allocator(frame_, std::move(assem_instr));
+    fprintf(stderr, "end reg_allocator\n");
+    fprintf(stderr, "start regalloc\n");
     reg_allocator.RegAlloc();
+    fprintf(stderr, "end regalloc\n");
     allocation = reg_allocator.TransferResult();
     il = allocation->il_;
     color = temp::Map::LayerMap(reg_manager->temp_map_, allocation->coloring_);

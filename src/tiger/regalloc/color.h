@@ -6,6 +6,13 @@
 #include "tiger/liveness/liveness.h"
 #include "tiger/util/graph.h"
 
+#include <set>
+#include <map>
+#include <vector>
+#include <string>
+#include <sstream>
+#include <iostream>
+
 namespace col {
 struct Result {
   Result() : coloring(nullptr), spills(nullptr) {}
@@ -21,10 +28,7 @@ using Table = graph::Table<temp::Temp, T>;
 class Color {
   /* TODO: Put your lab6 code here */
 public:
-  Color(fg::FGraph* flow_graph) 
-  : flow_graph_(flow_graph), live_graph_(live::LiveGraphFactory::GetLiveGraph()) {};
-  
-  Result Color(frame::Frame* f, assem::InstrList* il) {};
+  Color() {};
 
   void Build();
   void MakeWorkList();
@@ -34,42 +38,47 @@ public:
   void SelectSpill();
   void AssignColors();
 
-  void ShowStatus();
+  temp::Map* coloring_ = temp::Map::Empty();
 
-  static void StringBoolTableShow(std::string* s, bool* b);
-  static void NodeStringTableShow(live::INode* n, std::string* s);
-  static void NodeIntTableShow(live::INode* n, int* s);
-  static void NodeNodeTableShow(live::INode* n, live::INode* s);
-  static void NodeMoveTableShow(live::INode* n, live::MoveList* s);
-  static void TempGraphShow(FILE* out, temp::Temp* t);
-  
-private:
+  std::set<graph::Node<temp::Temp> *> simplify_worklist_, freeze_worklist_, spill_worklist_;
+
+  std::map<graph::Node<temp::Temp> *, live::MoveList *> movelist_;
+
   fg::FGraph* flow_graph_;
 
-  live::INodeListPtr simplify_worklist_;
-  live::INodeListPtr freeze_worklist_;
-  live::INodeListPtr spill_worklist_;
-  live::INodeListPtr spilled_nodes_;
-  live::INodeListPtr coalesced_nodes_;
-  live::INodeListPtr colored_nodes_;
-  live::INodeListPtr select_stack_;
+  live::LiveGraph liveness_;
 
-  live::MoveList* coalesced_moves_;
-  live::MoveList* constrained_moves_;
-  live::MoveList* frozen_moves_;
-  live::MoveList* worklist_moves_;
-  live::MoveList* active_moves_;
+  std::set<graph::Node<temp::Temp> *> coalesced_nodes_, spilled_nodes_, colored_nodes_;
 
-  Table<int> *degree_tab_;
-  Table<live::MoveList> *movelist_tab_;
-  Table<live::INode> *alias_tab_;
-  Table<std::string> *color_tab_;
-  temp::TempList* no_spill_temps_;
+  std::vector<graph::Node<temp::Temp> *> select_stack_;
 
-  live::LiveGraph live_graph_;
+  live::MoveList* worklist_moves_ = new live::MoveList(), *active_moves_ = new live::MoveList(), 
+  *coalesced_moves_ = new live::MoveList(), *constrained_moves_ = new live::MoveList(), *frozen_moves_ = new live::MoveList();
 
-  int K = 15;
+  std::map<graph::Node<temp::Temp> *, int> degree_;
 
+  std::set<std::pair<graph::Node<temp::Temp> *, graph::Node<temp::Temp> *> > adj_set_;
+  
+  std::map<graph::Node<temp::Temp> *, std::set<graph::Node<temp::Temp> *> > adj_list_;
+
+  std::map<graph::Node<temp::Temp> *, graph::Node<temp::Temp> *> alias_;
+
+  std::set<temp::Temp *> no_spill_temp_;
+
+  bool Precolored(temp::Temp* temp);
+  void AddEdge(graph::Node<temp::Temp> *u, graph::Node<temp::Temp> *v);
+  live::MoveList* NodeMoves(graph::Node<temp::Temp> *node);
+  bool MoveRelated(graph::Node<temp::Temp> *node);
+  void EnableMoves(graph::NodeList<temp::Temp> *nodes);
+  graph::NodeList<temp::Temp> *Adjacent(graph::Node<temp::Temp> *node);
+  void DecrementDegree(graph::Node<temp::Temp> *node);
+  graph::Node<temp::Temp>* GetAlias(graph::Node<temp::Temp> *node);
+  void AddWorklist(graph::Node<temp::Temp>* node);
+  bool OK(graph::Node<temp::Temp>* t, graph::Node<temp::Temp>* r);
+  bool OKForAll(graph::NodeList<temp::Temp>* t, graph::Node<temp::Temp>* r);
+  bool Conservative(graph::NodeList<temp::Temp>* nodes);
+  void Combine(graph::Node<temp::Temp>* u, graph::Node<temp::Temp>* v);
+  void FreezeMoves(graph::Node<temp::Temp>* u);
 };
 } // namespace col
 

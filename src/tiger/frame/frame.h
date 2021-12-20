@@ -83,7 +83,11 @@ public:
   [[nodiscard]] virtual temp::Temp* R15() = 0;
   [[nodiscard]] virtual temp::Temp* RSP() = 0;
   
+  [[nodiscard]] virtual std::vector<std::string> Colors() = 0;
+
   temp::Map *temp_map_;
+
+  int K = 15;
 protected:
   std::vector<temp::Temp *> regs_;
 };

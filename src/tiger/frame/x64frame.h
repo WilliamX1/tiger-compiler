@@ -19,6 +19,8 @@ private:
             *r13, *r14, *r15, *rsp;
 
 public:
+  int K = 15;
+
   X64RegManager() : frame::RegManager() {
     temp_map_->Enter(RAX(), new std::string("%rax"));
     temp_map_->Enter(RDI(), new std::string("%rdi"));
@@ -47,6 +49,8 @@ public:
   temp::Temp* FramePointer() override;
   temp::Temp* StackPointer() override;
   temp::Temp* ReturnValue() override;
+  
+  std::vector<std::string> Colors() override;
 
   /* get nth argument for function, range from 1 to 6 */
   temp::Temp* GetNthArg(int i) {

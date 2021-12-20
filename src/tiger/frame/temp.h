@@ -68,6 +68,16 @@ public:
   [[nodiscard]] Temp *NthTemp(int i) const;
   [[nodiscard]] const std::list<Temp *> &GetList() const { return temp_list_; }
 
+  [[nodiscard]] bool Contain(Temp* temp) {
+    return std::find(temp_list_.begin(), temp_list_.end(), temp) != temp_list_.end();
+  };
+  void Replace(Temp* old_temp, Temp* new_temp) {
+    for (auto iter = temp_list_.begin(); iter != temp_list_.end(); iter++)
+      if (*iter == old_temp) {
+        *iter = new_temp;
+      };
+  };
+
 private:
   std::list<Temp *> temp_list_;
 };

@@ -8,6 +8,7 @@
 #include "tiger/util/graph.h"
 
 #include <algorithm>
+#include <map>
 
 namespace live {
 
@@ -22,6 +23,10 @@ class MoveList {
 public:
   MoveList() = default;
 
+  MoveList(INodePtr src, INodePtr dst) {
+    move_list_.emplace_back(src, dst);
+  };
+
   [[nodiscard]] const std::list<std::pair<INodePtr, INodePtr>> &
   GetList() const {
     return move_list_;
@@ -32,9 +37,9 @@ public:
   void Prepend(INodePtr src, INodePtr dst) {
     move_list_.emplace_front(src, dst);
   }
-  MoveList *Union(MoveList *list);
-  MoveList *Intersect(MoveList *list);
-  MoveList *Difference(MoveList *left, MoveList *right);
+  [[nodiscard]] MoveList *Union(MoveList *list);
+  [[nodiscard]] MoveList *Intersect(MoveList *list);
+  [[nodiscard]] MoveList *Substract(MoveList *list);
 
 private:
   std::list<std::pair<INodePtr, INodePtr>> move_list_;
@@ -43,9 +48,11 @@ private:
 struct LiveGraph {
   IGraphPtr interf_graph;
   MoveList *moves;
+  std::map<temp::Temp*, double> priority;
 
   LiveGraph(IGraphPtr interf_graph, MoveList *moves)
       : interf_graph(interf_graph), moves(moves) {}
+  LiveGraph() {};
 };
 
 class LiveGraphFactory {
@@ -69,11 +76,17 @@ private:
 
   void LiveMap();
   void InterfGraph();
+
+  graph::Node<temp::Temp>* GetNode(graph::Graph<temp::Temp>* graph, temp::Temp* temp);
+  void ShowTemp(temp::Temp* temp);
+  void AddPrecoloredConflice(graph::Graph<temp::Temp>* graph);
+
 };
 
 temp::TempList* Union(temp::TempList* left, temp::TempList* right);
-temp::TempList* Difference(temp::TempList* left, temp::TempList* right);
+temp::TempList* Substract(temp::TempList* left, temp::TempList* right);
 bool Equal(temp::TempList* left, temp::TempList* right);
+bool Equal(std::map<graph::Node<assem::Instr>*, temp::TempList* > lhs, std::map<graph::Node<assem::Instr>*, temp::TempList* > rhs);
 bool Contain(temp::TempList* container, temp::Temp* temp);
 
 } // namespace live

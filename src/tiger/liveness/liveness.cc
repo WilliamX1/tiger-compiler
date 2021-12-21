@@ -210,6 +210,10 @@ void LiveGraphFactory::LiveMap() {
 
   bool fixed_point = false;
   int round = 0;
+  
+  // auto flowgraph_reverse_list = this->flowgraph_->Nodes()->GetList();
+  // reverse(flowgraph_reverse_list.begin(), flowgraph_reverse_list.end());
+
   while (!fixed_point) {
     /* Maybe Errors When Compare */
     LOG("Round %d\n", round++);
@@ -231,20 +235,20 @@ void LiveGraphFactory::LiveMap() {
       int uses_size = uses ? uses->GetList().size() : 0;
       LOG("Defs size: %d, Uses size: %d\n", defs_size, uses_size);
       
-      // // if (in_->Look(p) == NULL) 
-      //   // in_->Enter(p, Union(uses, Substract(out_->Look(p), defs)));
+      // if (in_->Look(p) == NULL) 
+      //   in_->Enter(p, Union(uses, Substract(out_->Look(p), defs)));
       // // else 
-      //   in_->Set(p, Union(uses, Substract(out_->Look(p), defs)));
+      //   // in_->Set(p, Union(uses, Substract(out_->Look(p), defs)));
       
       // // if (out_->Look(p) == NULL) 
-      //   // out_->Enter(p, NULL);
+      //   out_->Enter(p, NULL);
       // // else 
-      //   out_->Set(p, NULL);
+      //   // out_->Set(p, NULL);
       // for (auto q : p->Succ()->GetList()) {
       //   // if (out_->Look(p) == NULL) 
-      //     // out_->Enter(p, Union(out_->Look(p), in_->Look(q)));
+      //     out_->Enter(p, Union(out_->Look(p), in_->Look(q)));
       //   // else 
-      //     out_->Set(p, Union(out_->Look(p), in_->Look(q)));
+      //     // out_->Set(p, Union(out_->Look(p), in_->Look(q)));
       // };
 
 
@@ -271,6 +275,8 @@ void LiveGraphFactory::LiveMap() {
       if (!Equal(oldin_templist, in_->Look(p)) || !Equal(oldout_templist, out_->Look(p)))
         fixed_point = false;
     };
+
+    reverse(flowgraph_reverse_list.begin(), flowgraph_reverse_list.end());
   };
   LOG("End LiveMap\n");
   return;
@@ -287,8 +293,8 @@ void LiveGraphFactory::InterfGraph() {
     LOG("kind: %d", p->NodeInfo()->kind_);
     if (p->NodeInfo()->kind_ == assem::Instr::Kind::MOVE) {
       if (!uses || !defs || uses->GetList().empty() || defs->GetList().empty()) {
-        fprintf(stderr, "Impossible\n");
-        return;
+        fprintf(stderr, "Impossible MOVE instr NULL\n");
+        continue;
       };
       graph::Node<temp::Temp>* src_node = GetNode(live_graph_.interf_graph, uses->GetList().front());
       graph::Node<temp::Temp>* dst_node = GetNode(live_graph_.interf_graph, defs->GetList().front());

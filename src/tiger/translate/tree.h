@@ -291,6 +291,8 @@ public:
   const std::list<Exp *> &GetList() { return exp_list_; }
   temp::TempList *MunchArgs(assem::InstrList &instr_list, std::string_view fs);
   void UnMunchArgs(assem::InstrList &instr_list, std::string_view fs);
+  void ResetSP(assem::InstrList &instr_list, std::string_view fs);
+  void PopStaticLink();
 private:
   std::list<Exp *> exp_list_;
 };

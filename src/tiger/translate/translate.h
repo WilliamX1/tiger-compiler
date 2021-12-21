@@ -33,6 +33,8 @@ class AccessList {
 public:
   AccessList() = default;
   void PushBack(Access* access) { access_list_.push_back(access); };
+    void Append(Access *access) { access_list_.push_back(access); }
+  void Insert(Access *access) { access_list_.push_front(access); }
   const std::list<Access*> &GetList() const { return access_list_; };
 
 private:

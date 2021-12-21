@@ -138,7 +138,9 @@ public:
   int offset;
 
   InFrameAccess(int offset) : Access(INFRAME), offset(offset) { assert(offset < 0); };
-  tree::Exp* ToExp(tree::Exp* framPtr) const { return tree::NewMemPlus_Const(framPtr, offset); };
+  tree::Exp* ToExp(tree::Exp* framPtr) const { 
+    return new tree::MemExp(new tree::BinopExp(tree::BinOp::PLUS_OP, framPtr, new tree::ConstExp(offset)));
+  };
 };
 
 class InRegAccess : public Access {
@@ -152,8 +154,22 @@ public:
 class X64Frame : public Frame {
   /* TODO: Put your lab5 code here */
 public:
+  std::list<tree::Stm *> save_args;
+
   X64Frame(temp::Label* name, std::list<bool> escapes);
-  Access* allocLocal(bool escape) override;
+  Access* AllocLocal(bool escape) {
+    Access *tmp = nullptr;
+    if (escape) {
+      tmp = new InFrameAccess(s_offset);
+      s_offset -= wordsize;
+    } else {
+      tmp = new InRegAccess(temp::TempFactory::NewTemp());
+    }
+    return tmp;
+  };
+  tree::Stm *ProcEntryExit1(tree::Stm *body) override;
+  assem::InstrList *ProcEntryExit2(assem::InstrList *body) override;
+  assem::Proc *ProcEntryExit3(assem::InstrList *body) override;
 };
 
 } // namespace frame

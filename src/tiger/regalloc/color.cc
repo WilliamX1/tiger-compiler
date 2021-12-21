@@ -31,6 +31,7 @@ bool Color::Precolored(temp::Temp* temp) {
 void Color::AddEdge(graph::Node<temp::Temp>* u, graph::Node<temp::Temp>* v) {
     LOG("Begin AddEdge\n");
     if (adj_set_.find(std::make_pair(u, v)) == adj_set_.end() && u != v) {
+    // if (adj_set_.find(std::make_pair(u, v)) == adj_set_.end()) {
         LOG("AddEdge exe 0\n");
         adj_set_.insert(std::make_pair(u, v));
         adj_set_.insert(std::make_pair(v, u));
@@ -96,6 +97,7 @@ void Color::MakeWorkList() {
     LOG("Begin MakeWorkList\n");
     for (auto node : liveness_.interf_graph->Nodes()->GetList()) {
         if (Precolored(node->NodeInfo())) continue;
+        
         if (degree_[node] >= reg_manager->K) spill_worklist_.insert(node);
         else if (MoveRelated(node)) freeze_worklist_.insert(node);
         else simplify_worklist_.insert(node);
@@ -222,7 +224,7 @@ void Color::Combine(graph::Node<temp::Temp>* u, graph::Node<temp::Temp>* v) {
     else spill_worklist_.erase(v);
 
     if (u == NULL) {
-        fprintf(stderr, "Impossible\n");
+        fprintf(stderr, "Impossible Combine u NULL\n");
         return;
     };
     coalesced_nodes_.insert(v);

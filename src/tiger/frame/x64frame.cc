@@ -5,100 +5,74 @@ extern frame::RegManager *reg_manager;
 namespace frame {
 
 /* TODO: Put your lab5 code here */
-X64Frame::X64Frame(temp::Label* name, std::list<bool> escapes) : Frame(name, escapes) {
-  this->s_offset = -frame::wordsize;
-  this->formals = new AccessList();
+X64Frame::X64Frame(temp::Label *name, std::list<bool> escapes) {
+  label = name;
+  formals = new AccessList();
 
-  for (auto escape : escapes) {
-    this->formals->PushBack(allocLocal(escape));
-  };
-
+  s_offset = -8;
   int i = 1;
-  viewShift = NULL;
-  for (auto& formal : formals->GetList()) {
-    tree::Exp* dstExp;
-    if (formal->kind_ == Access::INFRAME) {
-      dstExp = new tree::MemExp(new tree::BinopExp(tree::PLUS_OP, new tree::TempExp(reg_manager->RBP()), new tree::ConstExp(((frame::InFrameAccess*) formal)->offset)));
-    } else dstExp = new tree::TempExp(((frame::InRegAccess*) formal)->reg);
+  int arg_num = escapes.size();
+  for (auto it : escapes) {
+    Access *a = AllocLocal(it);
+    formals->Append(a);
 
-    tree::Stm* stm;
-
-    if (i <= 6) {
-      stm = new tree::MoveStm(dstExp, new tree::TempExp(reg_manager->GetNthArg(i)));
-    } else {
-      stm = new tree::MoveStm(dstExp, new tree::MemExp(new tree::BinopExp(tree::BinOp::PLUS_OP, new tree::TempExp(reg_manager->RBP()), new tree::ConstExp((6 - i) * frame::wordsize))));
+    // push args
+    if (reg_manager->GetNthArg(i)) {
+      save_args.push_back(new tree::MoveStm(a->ToExp(new tree::TempExp(reg_manager->FramePointer())), new tree::TempExp(reg_manager->GetNthArg(i))));
     }
-
-    if (viewShift == nullptr) {
-      viewShift = new tree::StmList(stm);
-    } else {
-      viewShift->Append(stm);
-    };
-    i++;
-  };
-  return;
-};
-
-Access* X64Frame::allocLocal(bool escape) {
-  Access* local = NULL;
-  if (escape) {
-    local = new InFrameAccess(s_offset);
-    s_offset -= wordsize;
-  } else {
-    local = new InRegAccess(temp::TempFactory::NewTemp());
-  }
-  
-  return local;
-};
-
-tree::Exp* externalCall(std::string s, tree::ExpList* args) {
-  return new tree::CallExp(new tree::NameExp(temp::LabelFactory::NamedLabel(s)), args);
-};
-
-tree::Stm* ProcEntryExit1(Frame* frame, tree::Stm* stm) {
-  int num = 1;
-  
-  tree::Stm* viewshift = new tree::ExpStm(new tree::ConstExp(0));
-  
-  auto formal_list = frame->formals->GetList();
-  
-  for (auto formal : formal_list) {
-    if (reg_manager->GetNthArg(num))
-      viewshift = new tree::SeqStm(viewshift, new tree::MoveStm(formal->ToExp(new tree::TempExp(reg_manager->FramePointer())), new tree::TempExp(reg_manager->GetNthArg(num))));
     else {
-      frame->s_offset -= wordsize;
-      viewshift = new tree::SeqStm(new tree::MoveStm(formal->ToExp(new tree::TempExp(reg_manager->FramePointer())), new tree::MemExp(new tree::BinopExp(tree::BinOp::PLUS_OP, new tree::TempExp(reg_manager->RBP()), new tree::ConstExp((6 - num) * frame::wordsize)))), viewshift);
+      // 7th~ args
+      save_args.push_back(new tree::MoveStm(a->ToExp(
+        new tree::TempExp(reg_manager->FramePointer())), 
+        new tree::MemExp(
+          new tree::BinopExp(tree::BinOp::PLUS_OP, 
+            new tree::TempExp(reg_manager->FramePointer()), 
+              new tree::ConstExp((arg_num - i + 2) * frame::wordsize)))));
     }
-    num++;
-  };
-  return new tree::SeqStm(viewshift, stm);
-};
+    ++i;
+  }
+}
 
-assem::InstrList* ProcEntryExit2(assem::InstrList* body) {
-  static temp::TempList* retlist = NULL;
-  if (!retlist)
-    retlist = new temp::TempList(reg_manager->ReturnValue());
-  assem::OperInstr* ele = new assem::OperInstr("", NULL, retlist, new assem::Targets(NULL));
-  body->Append(ele);
+tree::Stm *X64Frame::ProcEntryExit1(tree::Stm *body) {
+  // save args
+  for (auto &it : save_args) {
+    body = tree::Stm::Seq(it, body);
+  }
   return body;
-};
+}
 
-assem::Proc* ProcEntryExit3(frame::Frame* frame, assem::InstrList* body) {
-  static char instr[256];
+// useless now
+assem::InstrList *X64Frame::ProcEntryExit2(assem::InstrList *body) {
+  return body;
+}
 
+assem::Proc *X64Frame::ProcEntryExit3(assem::InstrList *body) {
+  static char buf[256];
   std::string prolog;
-  sprintf(instr, ".set %s_framesize, %d\n", frame->label->Name().c_str(), -frame->s_offset);
-  prolog = std::string(instr);
-  sprintf(instr, "%s:\n", frame->label->Name(). c_str());
-  prolog.append(std::string(instr));
-  sprintf(instr, "subq $%d, %%rsp\n", -frame->s_offset);
-  prolog.append(std::string(instr));
+  std::string epilog;
 
-  sprintf(instr, "addq $%d, %%rsp\n", -frame->s_offset);
-  std::string epilog = std::string(instr);
+  // prolog part
+  sprintf(buf, ".set %s_framesize, %d\n", label->Name().c_str(), -s_offset);
+  prolog = std::string(buf);
+
+  sprintf(buf, "%s:\n", label->Name(). c_str());
+  prolog.append(std::string(buf));
+
+  sprintf(buf, "subq $%d, %%rsp\n", -s_offset);
+  prolog.append(std::string(buf));
+
+  // epilog part
+  sprintf(buf, "addq $%d, %%rsp\n", -s_offset);
+  epilog.append(std::string(buf));
+  
   epilog.append(std::string("retq\n"));
+
   return new assem::Proc(prolog, body, epilog);
-};
+}
+
+tree::Exp *ExternalCall(std::string s, tree::ExpList *args) {
+  return new tree::CallExp(new tree::NameExp(temp::LabelFactory::NamedLabel(s)), args);
+}
 
 temp::TempList* X64RegManager::Registers() {
   static temp::TempList* templist = NULL;

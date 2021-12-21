@@ -16,8 +16,6 @@ class RegManager {
 public:
   RegManager() : temp_map_(temp::Map::Empty()) {}
 
-  virtual ~RegManager() = default;
-
   temp::Temp *GetRegister(int regno) { return regs_[regno]; }
 
   /**
@@ -111,8 +109,12 @@ public:
 class AccessList {
 public:
   AccessList() = default;
-  void PushBack(Access* access) { access_list_.push_back(access); };
-  const std::list<Access *> &GetList() const { return access_list_; };
+  AccessList(std::initializer_list<Access *> list) : access_list_(list) {}
+
+  void Append(Access *flag) { access_list_.push_back(flag); }
+  void Insert(Access *flag) { access_list_.push_front(flag); }
+  std::list<Access *> &GetNonConstList() { return access_list_; }
+  const std::list<Access *> &GetList() { return access_list_; }
 
 private:
   std::list<Access *> access_list_;
@@ -125,13 +127,12 @@ public:
   AccessList* formals;
   int s_offset;
 
-  tree::StmList* viewShift;
-  int maxArgs = 0;
+  virtual Access *AllocLocal(bool escape) = 0;
 
-  Frame(temp::Label* name, std::list<bool> escapes) : label(name) {};
-
-  virtual Access *allocLocal(bool escape) = 0;
-
+  virtual tree::Stm *ProcEntryExit1(tree::Stm *body) = 0;
+  virtual assem::InstrList *ProcEntryExit2(assem::InstrList *body) = 0;
+  virtual assem::Proc *ProcEntryExit3(assem::InstrList *body) = 0;
+  
   virtual ~Frame() = default;
 };
 
@@ -193,10 +194,7 @@ private:
 };
 
 /* TODO: Put your lab5 code here */
-tree::Exp* externalCall(std::string s, tree::ExpList* args);
-tree::Stm* ProcEntryExit1(Frame* frame, tree::Stm* stm);
-assem::InstrList* ProcEntryExit2(assem::InstrList* ilist);
-assem::Proc* ProcEntryExit3(Frame* frame, assem::InstrList* ilist);
+tree::Exp* ExternalCall(std::string s, tree::ExpList* args);
 
 } // namespace frame
 

@@ -99,7 +99,7 @@ void ProcFrag::OutputAssem(FILE *out, OutputPhase phase, bool need_ra) const {
            frame_->label->Name().data());
 
   fprintf(stderr, "start procEntryExit3\n");
-  assem::Proc *proc = frame::ProcEntryExit3(frame_, il);
+  assem::Proc *proc = frame_->ProcEntryExit3(il);
   fprintf(stderr, "end procEntryExit3\n");
   // std::string proc_name = frame_->GetLabel();
   assert(frame_);

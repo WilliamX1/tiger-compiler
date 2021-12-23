@@ -14,35 +14,41 @@ constexpr int maxlen = 1024;
 
 namespace cg {
 
-static temp::Temp* saved_rbx = NULL;
-static temp::Temp* saved_rbp = NULL;
-static temp::Temp* saved_r12 = NULL;
-static temp::Temp* saved_r13 = NULL;
-static temp::Temp* saved_r14 = NULL;
-static temp::Temp* saved_r15 = NULL;
+void CodeGen::PushReg(assem::InstrList &instr_list, temp::Temp *pos, temp::Temp *to_be_push) {
+  frame_->s_offset -= frame::wordsize;
+  instr_list.Append(new assem::OperInstr("subq $" + std::to_string(frame::wordsize) + ", `d0", new temp::TempList(pos), nullptr, nullptr));
+  instr_list.Append(new assem::OperInstr("movq `s0, (`d0)", new temp::TempList(pos), new temp::TempList(to_be_push), nullptr));
+}
 
-void CodeGen::saveCalleeRegs(assem::InstrList &instr_list, std::string_view fs) {
-  saved_rbx = temp::TempFactory::NewTemp();
-  saved_rbp = temp::TempFactory::NewTemp();
-  saved_r12 = temp::TempFactory::NewTemp();
-  saved_r13 = temp::TempFactory::NewTemp();
-  saved_r14 = temp::TempFactory::NewTemp();
-  saved_r15 = temp::TempFactory::NewTemp();
-  instr_list.Append(new assem::MoveInstr("movq `s0, `d0", new temp::TempList(saved_rbx), new temp::TempList(reg_manager->RBX())));
-  instr_list.Append(new assem::MoveInstr("movq `s0, `d0", new temp::TempList(saved_rbp), new temp::TempList(reg_manager->RBP())));
-  instr_list.Append(new assem::MoveInstr("movq `s0, `d0", new temp::TempList(saved_r12), new temp::TempList(reg_manager->R12())));
-  instr_list.Append(new assem::MoveInstr("movq `s0, `d0", new temp::TempList(saved_r13), new temp::TempList(reg_manager->R13())));
-  instr_list.Append(new assem::MoveInstr("movq `s0, `d0", new temp::TempList(saved_r14), new temp::TempList(reg_manager->R14())));
-  instr_list.Append(new assem::MoveInstr("movq `s0, `d0", new temp::TempList(saved_r15), new temp::TempList(reg_manager->R15())));
-};
+void CodeGen::PopReg(assem::InstrList &instr_list, temp::Temp *pos, temp::Temp *to_be_pop) {
+  instr_list.Append(new assem::OperInstr("subq $" + std::to_string(frame::wordsize) + ", `d0", new temp::TempList(pos), nullptr, nullptr));
+  instr_list.Append(new assem::OperInstr("movq (`s0), `d0", new temp::TempList(to_be_pop), new temp::TempList(pos), nullptr));
+}
 
-void CodeGen::restoreCalleeRegs(assem::InstrList &instr_list, std::string_view fs) {
-  instr_list.Append(new assem::MoveInstr("movq `s0, `d0", new temp::TempList(reg_manager->RBX()), new temp::TempList(saved_rbx)));
-  instr_list.Append(new assem::MoveInstr("movq `s0, `d0", new temp::TempList(reg_manager->RBP()), new temp::TempList(saved_rbp)));
-  instr_list.Append(new assem::MoveInstr("movq `s0, `d0", new temp::TempList(reg_manager->R12()), new temp::TempList(saved_r12)));
-  instr_list.Append(new assem::MoveInstr("movq `s0, `d0", new temp::TempList(reg_manager->R13()), new temp::TempList(saved_r13)));
-  instr_list.Append(new assem::MoveInstr("movq `s0, `d0", new temp::TempList(reg_manager->R14()), new temp::TempList(saved_r14)));
-  instr_list.Append(new assem::MoveInstr("movq `s0, `d0", new temp::TempList(reg_manager->R15()), new temp::TempList(saved_r15)));
+void CodeGen::SaveCalleeRegs(assem::InstrList &instr_list, std::string_view fs) {
+  auto new_temp = reg_manager->RAX();
+  instr_list.Append(new assem::OperInstr("leaq " + frame_->label->Name() + "_framesize(%rsp), `d0", new temp::TempList(new_temp), nullptr, nullptr));
+  instr_list.Append(new assem::OperInstr("addq $" + std::to_string(frame_->s_offset) + ", `d0", new temp::TempList(new_temp), nullptr, nullptr));
+
+  PushReg(instr_list, new_temp, reg_manager->R12());
+  PushReg(instr_list, new_temp, reg_manager->R13());
+  PushReg(instr_list, new_temp, reg_manager->R14());
+  PushReg(instr_list, new_temp, reg_manager->R15());
+  PushReg(instr_list, new_temp, reg_manager->RBP());
+  PushReg(instr_list, new_temp, reg_manager->RBX());
+}
+
+void CodeGen::RestoreCalleeRegs(assem::InstrList &instr_list, std::string_view fs) {
+  auto new_temp = reg_manager->RBX();
+  instr_list.Append(new assem::OperInstr("leaq " + frame_->label->Name() + "_framesize(%rsp), `d0", new temp::TempList(new_temp), nullptr, nullptr));
+  instr_list.Append(new assem::OperInstr("addq $" + std::to_string(frame_->s_offset + 6 * frame::wordsize) + ", `d0", new temp::TempList(new_temp), nullptr, nullptr));
+
+  PopReg(instr_list, new_temp, reg_manager->R12());
+  PopReg(instr_list, new_temp, reg_manager->R13());
+  PopReg(instr_list, new_temp, reg_manager->R14());
+  PopReg(instr_list, new_temp, reg_manager->R15());
+  PopReg(instr_list, new_temp, reg_manager->RBP());
+  PopReg(instr_list, new_temp, reg_manager->RBX());
 }
 
 void CodeGen::Codegen() {
@@ -50,11 +56,13 @@ void CodeGen::Codegen() {
   fs_ = frame_->label->Name();
   auto instr_list = new assem::InstrList();
 
-  saveCalleeRegs(*instr_list, fs_);
+  SaveCalleeRegs(*instr_list, fs_);
+  // for regalloc
+  instr_list->Append(new assem::OperInstr("", reg_manager->ArgRegs(), nullptr, nullptr));
   for (auto &it : traces_->GetStmList()->GetList()) {
     it->Munch(*instr_list, fs_);
   }
-  restoreCalleeRegs(*instr_list, fs_);
+  RestoreCalleeRegs(*instr_list, fs_);
 
   assem_instr_ = std::make_unique<AssemInstr> (instr_list);
 }
@@ -131,11 +139,7 @@ void MoveStm::Munch(assem::InstrList &instr_list, std::string_view fs) {
   else if(dst_->kind_ == Exp::MEM){
     auto left = src_->Munch(instr_list, fs);
     auto right = ((MemExp *)dst_)->exp_->Munch(instr_list, fs);
-    
-    auto tempList = new temp::TempList();
-    tempList->Append(left);
-    tempList->Append(right);
-    instr_list.Append(new assem::OperInstr("movq `s0, (`s1)", nullptr, tempList, nullptr));
+    instr_list.Append(new assem::OperInstr("movq `s0, (`s1)", nullptr, new temp::TempList({left, right}), nullptr));
   }
 }
 
@@ -169,7 +173,7 @@ temp::Temp *BinopExp::Munch(assem::InstrList &instr_list, std::string_view fs) {
       right = right_->Munch(instr_list, fs);
 
       instr_list.Append(new assem::MoveInstr("movq `s0, `d0", new temp::TempList(reg_manager->RAX()), new temp::TempList(left)));
-      instr_list.Append(new assem::OperInstr("imulq `s0", nullptr, new temp::TempList(right), nullptr));
+      instr_list.Append(new assem::OperInstr("imulq `s0", new temp::TempList({reg_manager->RAX(), reg_manager->RDX()}), new temp::TempList(right), nullptr));
       instr_list.Append(new assem::MoveInstr("movq `s0, `d0", new temp::TempList(newReg), new temp::TempList(reg_manager->RAX())));
       break;
 
@@ -177,8 +181,8 @@ temp::Temp *BinopExp::Munch(assem::InstrList &instr_list, std::string_view fs) {
       left = left_->Munch(instr_list, fs);
       right = right_->Munch(instr_list, fs);
       instr_list.Append(new assem::MoveInstr("movq `s0, `d0", new temp::TempList(reg_manager->RAX()), new temp::TempList(left)));
-      instr_list.Append(new assem::OperInstr("cqto", nullptr, nullptr, nullptr));
-      instr_list.Append(new assem::OperInstr("idivq `s0", nullptr, new temp::TempList(right), nullptr));
+      instr_list.Append(new assem::OperInstr("cqto", new temp::TempList(reg_manager->RDX()), new temp::TempList(reg_manager->RAX()), nullptr));
+      instr_list.Append(new assem::OperInstr("idivq `s0", new temp::TempList({reg_manager->RAX(), reg_manager->RDX()}), new temp::TempList(right), nullptr));
       instr_list.Append(new assem::MoveInstr("movq `s0, `d0", new temp::TempList(newReg), new temp::TempList(reg_manager->RAX())));
       break;
   }
@@ -203,9 +207,9 @@ temp::Temp *TempExp::Munch(assem::InstrList &instr_list, std::string_view fs) {
   // else replace it by rsp and framesize
   temp::Temp* reg = temp::TempFactory::NewTemp();
   std::stringstream stream;
-  stream << "leaq " << fs << "_framesize(`s0), `d0";
+  stream << "leaq " << fs << "_framesize(%rsp), `d0";
   std::string assem = stream.str();
-  instr_list.Append(new assem::OperInstr(assem, new temp::TempList(reg), new temp::TempList(reg_manager->RSP()), nullptr));
+  instr_list.Append(new assem::OperInstr(assem, new temp::TempList(reg), nullptr, nullptr));
   return reg;
 }
 
@@ -235,12 +239,29 @@ temp::Temp *ConstExp::Munch(assem::InstrList &instr_list, std::string_view fs) {
   return newReg;
 }
 
+temp::TempList *moveArgs(assem::InstrList &instr_list, temp::TempList *args) {
+  auto res = new temp::TempList();
+
+  int i = 1;
+  for (auto &arg : args->GetList()) {
+    // move vars
+    if (i <= 6) {
+      instr_list.Append(new assem::MoveInstr("movq `s0, `d0", new temp::TempList(reg_manager->GetNthArg(i)), new temp::TempList(arg)));
+      res->Append(reg_manager->GetNthArg(i));
+    }
+    else {
+      instr_list.Append(new assem::OperInstr("subq $" + std::to_string(frame::wordsize) + ", %rsp", nullptr, nullptr, nullptr));
+      instr_list.Append(new assem::OperInstr("movq `s0, (%rsp)", nullptr, new temp::TempList(arg), nullptr));
+    }
+    ++i;
+  }
+
+  return res;
+}
+
 temp::Temp *CallExp::Munch(assem::InstrList &instr_list, std::string_view fs) {
   /* TODO: Put your lab5 code here */
-  std::stringstream stream;
-  std::string assem;
-
-  char temp[maxlen];
+  temp::Temp *newReg = temp::TempFactory::NewTemp();
 
   // store static link
   tree::Exp *staticlink = args_->GetList().front();
@@ -253,31 +274,28 @@ temp::Temp *CallExp::Munch(assem::InstrList &instr_list, std::string_view fs) {
 
   // handle args
   std::string label = temp::LabelFactory::LabelString(((tree::NameExp*)fun_)->name_);
-  args_->MunchArgs(instr_list, fs);
+  auto args = args_->MunchArgs(instr_list, fs);
+  // end
+
+  /* AFTER, THE rsp WOULD BE CHANGED */
+
+  auto to_be_protected = moveArgs(instr_list, args);
 
   // move rbp
-  stream.str("");
-  stream << "subq $" << frame::wordsize << ", `d0";
-  assem = stream.str();
-  instr_list.Append(new assem::OperInstr(assem, new temp::TempList(reg_manager->RSP()), nullptr, nullptr));
-  // instr_list.Append(new assem::MoveInstr("movq `s0, (`d0)", new temp::TempList(reg_manager->RSP()), new temp::TempList(oldSP)));
-  instr_list.Append(new assem::OperInstr("movq `s0, (`d0)", new temp::TempList(reg_manager->RSP()), new temp::TempList(oldSP), NULL));
+  instr_list.Append(new assem::OperInstr("subq $" + std::to_string(frame::wordsize) + ", %rsp", nullptr, nullptr, nullptr));
+  instr_list.Append(new assem::OperInstr("movq `s0, (%rsp)", nullptr, new temp::TempList(oldSP), nullptr));
 
   // call
-  assem = std::string("callq ") + std::string(label);
-  // instr_list.Append(new assem::OperInstr(assem, nullptr, nullptr, nullptr));
-  instr_list.Append(new assem::OperInstr(assem, reg_manager->CallerSaves(), reg_manager->ArgRegs(), nullptr));
-  
-  temp::Temp *newReg = temp::TempFactory::NewTemp();
+  instr_list.Append(new assem::OperInstr(std::string("callq ") + std::string(label), reg_manager->CallerSaves(), to_be_protected, nullptr));
   instr_list.Append(new assem::MoveInstr("movq `s0, `d0", new temp::TempList(newReg), new temp::TempList(reg_manager->RAX())));
   
   // reset sp
-  stream.str("");
-  stream << "addq $" << frame::wordsize << ", `d0";
-  assem = stream.str();
-  instr_list.Append(new assem::OperInstr(assem, new temp::TempList(reg_manager->RSP()), nullptr, nullptr));
+  instr_list.Append(new assem::OperInstr("addq $" + std::to_string(frame::wordsize) + ", %rsp", nullptr, nullptr, nullptr));
 
   args_->ResetSP(instr_list, fs);
+
+  /* END AFTER */
+
   return newReg;
 }
 
@@ -285,22 +303,8 @@ temp::TempList *ExpList::MunchArgs(assem::InstrList &instr_list, std::string_vie
   /* TODO: Put your lab5 code here */
   auto res = new temp::TempList();
 
-  int i = 1;
   for (auto &it : exp_list_) {
-    temp::Temp *arg = it->Munch(instr_list, fs);
-    // move vars
-    if (i <= 6) {
-      instr_list.Append(new assem::MoveInstr("movq `s0, `d0", new temp::TempList(reg_manager->GetNthArg(i)), new temp::TempList(arg)));
-    }
-    else {
-      std::stringstream stream;
-      stream << "subq $" << frame::wordsize << ", `d0";
-      std::string assem = stream.str();
-      instr_list.Append(new assem::OperInstr(assem, new temp::TempList(reg_manager->RSP()), nullptr, nullptr));
-      instr_list.Append(new assem::OperInstr("movq `s0, (`s1)", nullptr, new temp::TempList({arg, reg_manager->RSP()}), nullptr));
-    }
-    res->Append(arg);
-    ++i;
+    res->Append(it->Munch(instr_list, fs));
   }
 
   return res;
@@ -314,9 +318,9 @@ void ExpList::ResetSP(assem::InstrList &instr_list, std::string_view fs) {
     }
     else {
       std::stringstream stream;
-      stream << "addq $" << frame::wordsize << ", `d0";
+      stream << "addq $" << frame::wordsize << ", %rsp";
       std::string assem = stream.str();
-      instr_list.Append(new assem::OperInstr(assem, new temp::TempList(reg_manager->RSP()), nullptr, nullptr));
+      instr_list.Append(new assem::OperInstr(assem, nullptr, nullptr, nullptr));
     }
     ++i;
   }

@@ -9,6 +9,7 @@
 
 #include <algorithm>
 #include <map>
+#include <set>
 
 namespace live {
 
@@ -39,7 +40,6 @@ public:
   }
   [[nodiscard]] MoveList *Union(MoveList *list);
   [[nodiscard]] MoveList *Intersect(MoveList *list);
-  [[nodiscard]] MoveList *Substract(MoveList *list);
 
 private:
   std::list<std::pair<INodePtr, INodePtr>> move_list_;
@@ -76,18 +76,10 @@ private:
 
   void LiveMap();
   void InterfGraph();
-
-  graph::Node<temp::Temp>* GetNode(graph::Graph<temp::Temp>* graph, temp::Temp* temp);
-  void ShowTemp(temp::Temp* temp);
-  void AddPrecoloredConflice(graph::Graph<temp::Temp>* graph);
-
 };
 
-temp::TempList* Union(temp::TempList* left, temp::TempList* right);
-temp::TempList* Substract(temp::TempList* left, temp::TempList* right);
-bool Equal(temp::TempList* left, temp::TempList* right);
-bool Equal(std::map<graph::Node<assem::Instr>*, temp::TempList* > lhs, std::map<graph::Node<assem::Instr>*, temp::TempList* > rhs);
-bool Contain(temp::TempList* container, temp::Temp* temp);
+std::set<temp::Temp *> ToSet(const std::list<temp::Temp *> &origin);
+temp::TempList *ToTempList(const std::set<temp::Temp *> &origin);
 
 } // namespace live
 

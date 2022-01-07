@@ -1,14 +1,14 @@
 # Tiger Compiler Labs in C++
 
 ## Contents
-- [编译原理 `tiger` 答辩](#编译原理-`tiger`-答辩)
-	- [Lab1：Straight-line Program Interpreter](#Lab1：Straight-line-Program-Interpreter)
-	- [Lab2：Lexical Analysis](#Lab2：Lexical-Analysis)
-	- [Lab3：Parsing](#Lab3：Parsing)
-	- [Lab4：Type Checking](#Lab4：Type-Checking)
-	- [Lab5 Part1：Escape Analysis and Translation](#Lab5-Part1：Escape-Analysis-and-Translation)
-	- [Lab5：Tiger Compiler without register allocation](#Lab5：Tiger-Compiler-without-register-allocation)
-	- [Lab6：Register Allocation](#Lab6：Register-Allocation)
+- [编译原理 tiger 答辩](#编译原理-tiger-答辩)
+	- [Lab1: Straight-line Program Interpreter](#Lab1:-Straight-line-Program-Interpreter)
+	- [Lab2: Lexical Analysis](#Lab2:-Lexical-Analysis)
+	- [Lab3: Parsing](#Lab3:-Parsing)
+	- [Lab4: Type Checking](#Lab4:-Type-Checking)
+	- [Lab5 Part1: Escape Analysis and Translation](#Lab5-Part1:-Escape-Analysis-and-Translation)
+	- [Lab5: Tiger Compiler without register allocation](#Lab5:-Tiger-Compiler-without-register-allocation)
+	- [Lab6: Register Allocation](#Lab6:-Register-Allocation)
 	- [总结](#总结)
 - [编译原理期末整理](#编译原理期末整理)
 	- [静态链 & 逃逸分析](#静态链-&-逃逸分析)
@@ -29,11 +29,11 @@
 
 
 
-# 编译原理 `tiger` 答辩
+# 编译原理 tiger 答辩
 
 > 这是一个 **学生项目编译器**，包括了**避免语法和语义相互纠缠的抽象语法树**，**独立于寄存器分配的指令选择**，能使编译器前期阶段有更多灵活性的 **复写传播**，以及**防止从属于特定目标机的方法**。本编译器有一个简单而完整的后端，允许在指令选择之后进行 **寄存器分配**，能够生成完整的 **汇编代码**。
 
-## Lab1：Straight-line Program Interpreter
+## Lab1: Straight-line Program Interpreter
 
 在 `lab1` 中，我们实现了一个简单的 **直线式程序解释器**。
 
@@ -53,7 +53,7 @@ Table* A::CompoundStm::Interp(Table* t) const {
 
 注：这个 `lab` 仅用于帮助我们更好地了解 **环境**、**抽象语法**、**递归结构** 和 **代码风格** 等，不属于  `tiger` 编译器的一部分。
 
-## Lab2：Lexical Analysis
+## Lab2: Lexical Analysis
 
 在 `lab2` 中，我们运用 **flexc++** 来完成 `tiger` 的 **词法分析** 部分。**词法分析** 是指将输入分解成一个个独立的词法符号，即 “单词符号”（token）。
 
@@ -77,7 +77,7 @@ Table* A::CompoundStm::Interp(Table* t) const {
 
 ```
 
-## Lab3：Parsing
+## Lab3: Parsing
 
 在 `lab3` 中，我们运用 **Bisonc++** 来完成 `tiger` 的 **语法分析**。**语法分析** 是指分析程序的短语结构。
 
@@ -105,7 +105,7 @@ ty:
 
 注：这个 `lab` 的实现有很多种，且可能会影响到后面的 `lab` 所生成的语法树等结构，单拿满分并不难，但如果存在小的 `bug` 可能会导致后面的 `lab` 无法完成，建议先简单完成等到之后的 `lab` 发现这部分错误再来修改。
 
-## Lab4：Type Checking
+## Lab4: Type Checking
 
 在 `lab4` 中，我们完成了 `tiger` 的 **语义分析** 。**语义分析** 是指将变量的定义与它们的各个使用联系起来，检查每一个表达式是否有正确的类型，并将抽象语法转换成更简单的、适合于生成机器代码的表示。
 
@@ -125,7 +125,7 @@ type::Ty* SimpleVar::SemAnalyze(env::VEnvPtr venv, env::TEnvPtr tenv, int labelc
 };
 ```
 
-## Lab5 Part1：Escape Analysis and Translation
+## Lab5 Part1: Escape Analysis and Translation
 
 在 `lab5 Part1` 中，我们完成了 `tiger` 的 **逃逸分析** 和 **中间表示树** 部分。
 
@@ -178,7 +178,7 @@ tr::ExpAndTy* CallExp::Translate(env::VEnvPtr venv, env::TEnvPtr tenv, tr::Level
 
 注：这个 `lab` 的 **中间表示树** 部分依赖于 **帧栈** 的实现，因此并没有设置检测。
 
-## Lab5：Tiger Compiler without register allocation
+## Lab5: Tiger Compiler without register allocation
 
 在 `lab5` 中，我们完成了 `tiger` 的 **帧栈** 和 **指令选择** 部分。
 
@@ -233,7 +233,7 @@ temp::Temp* TempExp::Munch(assem::InstrList &instr_list, std::string_view fs) {
 };
 ```
 
-## Lab6：Register Allocation
+## Lab6: Register Allocation
 
 在 `lab6` 中，我们完成了 `tiger` 的 **活跃分析** 和 **寄存器分配** 部分。
 
@@ -536,6 +536,7 @@ c. nQueens->try->printBoard->printSquare
 **左侧 d 的直接指向总是所对应的栈的最深的位置处**
 
 e.g.
+
 ![2019-1-2](./README/2019-1-2.png)
 
 > 3. Determine whether the following local variables can escape and explain your reasons.(12’)
@@ -603,8 +604,7 @@ use：出现在赋值号右边（或其他表达式中）的变量。
 in：如果一个变量在一个结点的所有入边上均是活跃的。
 out：如果一个变量在一个结点的所有出边上均是活跃的，则该变量在该结点是出口活跃的。
 pred[n]：结点 n 的所有前驱结点的集合。
-succ[n]：结点 n 的所有后继结点的集合。
-**
+succ[n]：结点 n 的所有后继结点的集合。**
 
 活跃分析的数据流方程
 
@@ -657,21 +657,25 @@ e.g.
 ![2018-4-4](./README/2018-4-4.png)
 
 - 重新构造冲突图如下。
+
   ![2018-4-4-1](./README/2018-4-4-1.png)
 
 - 根据 Briggs 法则，选择传送指令相关的 $t1$ 和 $t3$ 结点进行合并，得到冲突图如下。
+
   ![2018-4-4-2](./README/2018-4-4-2.png)
 
 - 根据 Briggs 法则，选择传送指令相关的 $t3$ 和 $r4$、$t4$ 和 $r4$ 结点进行合并，得到冲突图如下。
+
   ![2018-4-4-3](./README/2018-4-4-3.png)
 
 - 所有传送指令都是受抑制的，可以消除。
 
-- 依次简化压栈 $n$，$r1$，$r2$，$t1 \& r3$，$t3 \& t4 \& r4$。
+- 依次简化压栈 $n$，$r1$，$r2$，$t1$ & $r3$，$t3$ & $t4$ & $r4$。
 
 - 分配 $r4$ 给 $n$，分配 $r3$ 给 $t1$，分配 $r4$ 给 $t3$ 和 $t4$。
 
 - 染色成功，重写指令并消除多余传送指令，结果如下。
+
 ```c++
 M[t2] <- r4
 r4 <- r1

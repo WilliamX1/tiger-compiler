@@ -15,6 +15,7 @@
 	- [活跃分析和寄存器分配](#活跃分析和寄存器分配)
 	- [指令选择](#指令选择)
 	- [垃圾收集](#垃圾收集) 
+	- [函数式语言程序设计](#函数式语言程序设计)
 - [Code Frame Description](#Code-Frame-Description)
   - [Overview](#overview)
   - [Difference Between C Labs and C++ Labs](#difference-between-c-labs-and-c-labs)
@@ -27,7 +28,7 @@
   - [Contributing to Tiger Compiler](#contributing-to-tiger-compiler)
   - [External Documentations](#external-documentations)
 
-
+<div STYLE="page-break-after: always;"></div>
 
 # 编译原理 tiger 答辩
 
@@ -453,7 +454,7 @@ if (can_select) {
 
 最后，感谢上海交通大学软件学院院长 **臧斌宇** 教授和 **吴明瑜** 老师的精彩授课，**李哲** 助教在 `lab` 完成方面给了我很多帮助与指导。
 
-
+<div STYLE="page-break-after: always;"></div>
 
 # 编译原理期末整理
 
@@ -618,7 +619,7 @@ $$
 ![2018-4-2](./README/2018-4-2.png)
 
 * caller-saved 需要放在 call 指令的 def 处，传递函数参数的寄存器需要放在 call 指令的 use 处。
-* callee-saved 、存放函数返回值的寄存器 需要放在 return 指令的 use 处，return 指令的 def 一定为空，use in out 一定相同。
+* return 指令的 def 和 use 一定为空，use in out 一定相同且为 callee-saved 、存放函数返回值的寄存器。
 
 > 3. Draw the interference graph for the program. Please use dashed lines
 for move edges and solid line for real interference edges. (10’)
@@ -706,7 +707,7 @@ and **calculate the cost** of your instruction sequences. (10’)
 **Maximal Munch 算法（P138）**
 从树的根节点开始，寻找适合它的 **最大瓦片（覆盖结点数最多的瓦片）**，用这个瓦片覆盖根节点，同时也可能会覆盖根节点附近的其他几个结点。覆盖根节点后，遗留下了若干子树，然后，对每一棵子树重复相同的算法。
 
-**注：在 Jouette 体系结构中，寄存器 $r0$ 总是包含 0。**
+**注：在 Jouette 体系结构中，寄存器 $r_0$ 总是包含 0。**
 
 ![2018-3-1-2](./README/2018-3-1-2.png)
 
@@ -785,7 +786,222 @@ frame(spills in pre-allocated stack) occupied by non-live variables? (3’)
 
 ![2018-2-4](./README/2018-2-4.png)
 
+### 一些概念
 
+**垃圾**：在堆中分配且通过任何程序变量形成的指针链都无法到达的记录。
+
+**垃圾收集**：垃圾占据的存储空间应当被回收，以便分配给新的记录的过程。
+
+### 标记 - 清扫式收集
+
+[可参考文章](https://blog.csdn.net/FoolishAndStupid/article/details/72571480)
+
+在标记清扫式中，程序变量和指针构成一个有向图，用 DFS 对图进行遍历，标记可以到达的点，于是未被标记的点就是垃圾，应当被回收。从第一个地址到最后一个地址对整个堆进行清扫。清扫出来的垃圾用一个链表（空闲表）链接在一起。
+
+深度优先搜索
+
+```C++
+function DFS(x)
+	if x 是一个指向堆的指针
+		if 记录 x 还没有被标记
+			标记 x
+			for 记录 x 的每一个域 fi
+				DFS(x.fi)
+```
+
+标记-清扫式垃圾收集
+
+```C++
+标记阶段
+	for 每一个根 v
+		DFS(v)
+
+清扫阶段
+	p <- 堆中第一个地址
+	while p < 堆中最后一个地址
+		if 记录 p 已标记
+			去掉 p 的标记
+		else 令 f1 为 p 中的第一个域
+			p.f1 <- freelist
+			freelist <- p
+			p <- p + (size of record p)
+```
+
+**假设在大小为 $H$ 的堆中有 $R$ 个字的可到达数据，则垃圾收集的分摊代价是：**
+
+$$
+\frac{c_1R + c_2H}{H - R}
+$$
+
+**使用一个显式的栈**
+
+使用显式的栈而不是递归来实现深度优先搜索，但辅助栈的存储空间大小与被分配的堆空间大小相同仍然是不能接受的。
+
+**指针逆转**
+
+使用 $x.f_i$ 来存储栈自身的一个元素，之后在栈中弹出 $x.f_i$ 的内容时，再将域 $x.f_i$ 恢复为它原来的值，能够节约空间。
+
+使用指针逆转的深度优先搜索
+
+```C++
+function DFS(x)
+	if x 是一个指针并且记录 x 没有标记
+		t <- nil
+		标记 x; done[x] <- 0
+		while true
+			i <- done[x]
+			if i < 记录 x 中域的个数
+				y <- x.fi
+				if y 是一个指针并且记录 y 没有标记
+					x.fi <- t; t <- x; x <- y
+					标记 x; done[x] <- 0
+				else
+					done[x] <- i + 1
+			else
+				y <- x; x <- t
+				if x = nil then return
+				i <- done[x]
+				t <- x.fi; x.fi <- y
+				done[x] <- i + 1
+```
+
+**空间表数组**
+
+使用一个由若干个空闲表组成的数组，使得 freelist[i] 是所有大小为 $i$ 的记录组成的链表。这样，当程序要分配一个大小为 $i$ 的结点时，只需取 freelist[i] 的表头即可。收集器的清扫阶段可以将每一个大小为 $j$ 的结点放在 freelist[j] 的表头处。
+
+### 引用计数
+
+[可参考文章](https://baike.baidu.com/item/%E5%BC%95%E7%94%A8%E8%AE%A1%E6%95%B0/10205507)
+
+编译器要生成一些额外的指令，使得每当将 $p$ 存储到 $x.f_i$ 时便增加 $p$ 的引用计数，并减少 $x.f_i$ 以前指向的记录的引用计数。如果某个记录 $r$ 的引用计数减少为零，则需将 $r$ 放到空闲表中，并且减少 $r$ 指向的所有其他记录的引用计数。
+
+**问题**
+
+1. 无法回收构成环的垃圾。
+2. 增加引用计数所需的操作代价非常大。
+
+**解决方法**
+
+1. 简单要求程序员在使用一个数据结构时显示地解开所有的环。
+2. 将引用计数（用于急切的且非破坏性的垃圾回收）与偶尔的标记-清扫（用于回收环）相结合。
+
+### 复制式收集
+
+[可参考文章](https://blog.csdn.net/en_joker/article/details/79741410)
+
+遍历整个图（堆中称为 from-space 的部分），并在堆的新区域（称为 to-space)建立一个同构的副本。副本是紧凑的，它占据连续的、不含碎片的存储单元（即在可到达数据之间没有零散分布的空间记录）。原来指向 from-space 的所有的根在复制之后变成指向 to-space 副本，在此之后，整个 from-space （垃圾，加上以前可到达的图）便成为不可达到的。
+
+**收集的初始化**
+
+**转递**【P199】
+
+**Cheney 算法【P200】**
+
+```C++
+scan <- next <- to-space 的开始
+for 每一个根 r
+	r <- Forward(r)
+	while scan < next
+		for scan 处的那个记录的每一个域 fi
+			scan.fi <- Forward(scan.fi)
+		scan <- scan + scan 处的那个记录的大小
+```
+
+Cheney 算法不需要外部的栈，也不需要逆转指针，它使用 scan 和 next 之间的 to-space 区域作为其宽度优先搜索队列，这使得它的实现比采用指针逆转的深度优先搜索简单得多。
+
+**引用的局部性**
+
+如果一个位于地址 $a$ 的记录指向另一个位于地址 $b$ 的记录，则 $a$ 和 $b$ 可能相距很远。
+
+具有**良好的局部引用性**非常重要，在深度优先遍历中父亲节点往往与其孩子节点相邻较近，故其局部引用性较好。
+
+**垃圾收集的代价**
+
+$$
+\frac{c_3R}{\frac{H}{2} - R}
+$$
+
+```C++
+function Forward(p)
+	if p 指向 from-space
+		then if p.f1 指向 to-space
+			then return p.f1
+			else Chase(p); return p.f1
+		else return p
+
+function Chase(p)
+	repeat
+		q <- next
+		next <- next + 记录 p 的大小
+		r <- nil
+		for 记录 p 的每一个域 fi
+			q.fi <- p.fi
+			if q.fi 指向 from-space 且 q.fi.f1 不指向 to-space
+			then r <- q.fi
+		p.f1 <- q
+		p <- r
+	until p = nil
+```
+
+### 分代收集
+
+[可参考文章](https://blog.csdn.net/en_joker/article/details/79737533)
+
+为了避免在所有的 $G_1, G_2, \cdots, $ 中搜索 $G_0$ 的各个根节点，我们让编译好的程序记住何处存在有这种从老对象指向新对象的指针。有以下几种方法：【P202】
+
+根据对象的活跃度将对象氛围几个 “代（G）”，年轻的会慢慢变老哦。收集器会更多得关注年轻的代（其成为垃圾的可能性更高）。但年老的指向年轻的，这样光对年轻代扫描得到的数据不准确。
+
+- 记忆表：用向量记录更新过的对象
+- 记忆集合：用对象内的一位来记录是否更新过
+- 卡片标记：划分存储区
+- 页标记：利用操作系统中的**赃位**。
+
+**分代收集的代价**
+
+### 增量式收集
+
+[可参考文章](https://blog.csdn.net/u011320646/article/details/50414722)
+
+提供了良好的交互性。
+
+- 栅栏写：每一条**存数指令**进行检查以确保其遵守相关不变式。
+- 栅栏读：每一条**读数指令**进行检查以确保其遵守相关不变式。
+
+**三色标记**：在标记清扫式或复制式垃圾收集方法中，有以下三种记录：
+
+- **白色** 对象是用深度优先或宽度优先搜索那些还未访问过的对象。
+- **灰色** 对象是那些已经被访问过（标记或复制），但其儿子还未被查看过的对象。
+- **黑色** 对象是那些已经被标记过，并且其儿子也已被标记过的对象。
+
+```C++
+while 存在任何灰色对象
+	选择一个灰色记录 p
+	for p 的每一个域 fi
+		if 记录 p.fi 是白色
+			将记录 p.fi 涂成灰色
+	将记录 p 涂成黑色
+```
+
+### Baker 算法
+
+基于 Cheney 复制式收集算法，可与分代收集兼容。
+
+Baker 算法的最大代价是为了维持不变式而在每条取数指令之后增加的额外指令。
+
+
+# 函数式语言程序设计
+
+## 闭包
+
+闭包是一个记录，包含了指向函数机器代码的指针及访问必须的非局部变量的途径。一种简单的闭包可以只包含代码指针和静态链，非局部变量可以通过这个静态链来访问。
+
+**环境**：闭包中给出对变量值的访问途径的部分通常称为环境。
+
+## 堆上分配的活动记录
+
+详见书 P224
+
+<div STYLE="page-break-after: always;"></div>
 
 # Code Frame Description
 
@@ -911,5 +1127,5 @@ You can read external documentations on our course website:
 
 - [Lab Assignments](https://ipads.se.sjtu.edu.cn/courses/compilers/labs.shtml)
 - [Environment Configuration of Tiger Compiler Labs](https://ipads.se.sjtu.edu.cn/courses/compilers/tiger-compiler-environment.html)
-<!---- [Tiger Compiler in Modern C++ Style](https://ipads.se.sjtu.edu.cn/courses/compilers/tiger-compiler-cpp-style.html)-->
+- [Tiger Compiler in Modern C++ Style](https://ipads.se.sjtu.edu.cn/courses/compilers/tiger-compiler-cpp-style.html)
 

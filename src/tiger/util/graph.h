@@ -105,6 +105,10 @@ public:
   void Clear() { node_list_.clear(); }
   void Prepend(Node<T> *n) { node_list_.push_front(n); }
   void Append(Node<T> *n) { node_list_.push_back(n); }
+  void Fusion(Node<T> *n) {
+    if (!Contain(n)) Append(n);
+    return;
+  }
 
   // Set operation on two lists
   NodeList<T> *Union(NodeList<T> *nl);
@@ -215,9 +219,13 @@ template <typename T> void NodeList<T>::CatList(NodeList<T> *nl) {
 
 template <typename T> NodeList<T> *NodeList<T>::Union(NodeList<T> *nl) {
   NodeList<T> *res = new NodeList<T>();
-  res->CatList(this);
-  res->CatList(nl);
-  res->node_list_.unique();
+  for (auto node : node_list_) {
+    res->Append(node);
+  }
+  for (auto node : nl->GetList()) {
+    if (!res->Contain(node))
+      res->Append(node);
+  }
   return res;
 }
 

@@ -4,10 +4,6 @@
 #include "tiger/absyn/absyn.h"
 #include "tiger/parse/parser.h"
 
-// define here to parse compilation
-frame::RegManager *reg_manager;
-frame::Frags frags;
-
 int main(int argc, char **argv) {
   std::unique_ptr<absyn::AbsynTree> absyn_tree;
 

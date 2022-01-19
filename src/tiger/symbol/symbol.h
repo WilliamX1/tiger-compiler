@@ -34,16 +34,12 @@ private:
 template <typename ValueType>
 class Table : public tab::Table<Symbol, ValueType> {
 public:
-  Table() : tab::Table<Symbol, ValueType>() { in_loop_ = 0; }
+  Table() : tab::Table<Symbol, ValueType>() {}
   void BeginScope();
   void EndScope();
-  void BeginLoop();
-  void EndLoop();
-  bool inLoop();
 
 private:
   Symbol marksym_ = {"<mark>", nullptr};
-  int in_loop_; /* loop level */
 };
 
 template <typename ValueType> void Table<ValueType>::BeginScope() {
@@ -55,18 +51,6 @@ template <typename ValueType> void Table<ValueType>::EndScope() {
   do
     s = this->Pop();
   while (s != &marksym_);
-}
-
-template <typename ValueType> void Table<ValueType>::BeginLoop() {
-  this->in_loop_++;
-}
-
-template <typename ValueType> void Table<ValueType>::EndLoop() {
-  this->in_loop_--;
-}
-
-template <typename ValueType> bool Table<ValueType>::inLoop() {
-  return in_loop_ > 0;
 }
 
 } // namespace sym

@@ -362,88 +362,45 @@ for (auto iter : reg_manager->Registers()->GetList())
 
 ```C++
 /* Find a degree temp whose degree < K */
-live::INodePtr chosen = NULL;
-for (auto &it : node_list) {
-  if (temp_is_in_stack[it]) continue;
-  if (chosen = NULL || temp_degree[chosen] > temp_degree[it]) chosen = it;
-  if (temp_degree[chosen] < K) break;
+if (!simplify_work_list_->GetList().empty()) {
+    auto node = simplify_work_list_->GetList().front();
+    simplify_work_list_->DeleteNode(node);
+    select_stack_->Append(node);
+    for (auto tmp : Adjacent(node)->GetList()) 
+      DecrementDegree(tmp);
 };
-/* Push it into stack */
-for (auto &it: chosen->Pred()->GetList())
-	temp_degree[it]--;
-
-temp_degree[chosen] = 0;
-stack.push(chosen);
-temp_is_in_stack[chosen] = true;
 ```
 
-3. **合并**：对简化阶段得到的简化图实施保守的合并，即遵循 $Briggs$ 原则或 $George$ 原则，但在我的实现中并省去了合并这一环节。
+3. **合并**：对简化阶段得到的简化图实施保守的合并，即遵循 $Briggs$ 原则或 $George$ 原则。
 
-4. **冻结**：如果 **简化** 和 **合并** 都不能再进行，就寻找一个 **度数较低** 的 **传送有关** 的结点，我们 **冻结** 这个结点所关联的传送指令，即放弃对这些传送指令进行合并的希望。显然，因为我的实现不考虑 **合并**，所以自然也就没有 **冻结** 这一阶段。
+4. **冻结**：如果 **简化** 和 **合并** 都不能再进行，就寻找一个 **度数较低** 的 **传送有关** 的结点，我们 **冻结** 这个结点所关联的传送指令，即放弃对这些传送指令进行合并的希望。
 
 5. **溢出**：如果没有低度数的结点，选择一个潜在可能溢出的高度数结点并将其压入栈。我的实现中，在 **简化** 部分选择结点时并没有完全限制结点的度数必须小于 $K$ ，而是如果小于 $K$ 则满足条件直接选择该结点，如果均不满足则选择度数最小的那个高度数结点，因此也就包含了溢出部分。
 
 6. **选择**：弹出整个栈并指派颜色。先尝试给栈中的每一个结点分配颜色。
 
-```C++
-auto test_is_precolored = reg_manager->temp_map_->Look(top->NodeInfo());
-if (test_is_precolored)
-	map->Enter(top->NodeInfo(), new std::string(*test_is_precolored));
-else {
-  /* Find used */
-  std::set<std::string> used;
-  for (auto &it : top->Succ()->GetList()) {
-    auto pre_color = reg_manager->temp_map_->Look(it->NodeInfo());
-    if (pre_color) used.insert(*pre_color);
-    else {
-      auto has_color = map->Look(it->NodeInfo());
-      if (has_color) used.insert(*has_color);
-    };
-  };
-
-  /* If no color to use */
-  if (used.size() == colors.size()) {
-  	can_select = false;
-  	break;
-  };
-  /* Find usable color */
-  std::string usable;
-  for (auto &it : colors)
-  	if (!used.count(it)) {
-  		usable = it;
-  		break;
-	};
-  /* Color */
-	map->Enter(top->NodeInfo(), new std::string(usable));
-}
-```
-
 如果分配不成功，则实际溢出一个高度数结点，然后再重新进行 **简化** 、**选择** 等流程。
-
-```C++
-if (can_select) {
-	result.coloring = map;
-	break;
-} else {
-	/* Spill and rerun */
-  result.spills->Append(stack.top());
-  stack.pop();
-  delete map;
-};
-```
 
 最后，我们在 `src/tiger/regalloc/regalloc.cc` 中整合整个寄存器分配的全过程，主要算法如下：
 
 ```C++
 1. AssemFlowGraph(); /* 构造流程图 */
 2. Liveness(); /* 活跃分析 */
-3. color.GetResult(); /* 预着色 */
-4. if (success) return; /* 成功着色，整理并返回 */
-5. else { /* 不成功着色，实际溢出一个高度数结点并改写程序，将该结点写入帧栈 */
-  instr_list->Insert(iter, new assem::OperInstr("leaq " + frame_label->Name() + "_framesize(%rsp), `d0", new temp::TempList(new_temp), NULL, NULL));
-  instr_list->Insert(iter, new assem::OperInstr("addq $" + std::to_string(frame_->s_offset) + ", `d0", new temp::TempList(new_temp), NULL, NULL));
-  instr_list->Insert(iter, new assem::OperInstr("movq (`s0), `d0", new temp::TempList(it->NodeInfo()), new temp::TempList(new_temp), NULL));
-}
+3. Init(); /* 预着色 */
+	 Build();
+	 MakeWorkList(); 
+	 do {
+     if (!simplify_work_list_->GetList().empty()) Simplify();
+     if (!worklist_moves_->GetList().empty()) Coalesce();
+     if (!freeze_work_list_->GetList().empty()) Freeze();
+     if (!spill_work_list_->GetList().empty()) SelectSpill();
+   } while (!simplify_work_list_->GetList().empty() || !worklist_moves_->GetList().empty()
+      || !freeze_work_list_->GetList().empty() || !spill_work_list_->GetList().empty());
+   AssignColor();
+4. if (success) 
+   		SimplifyInstrList();
+			return; /* 成功着色，删除无用的 move 指令并返回 */
+5. else RewriteProgram(); /* 不成功着色，实际溢出一个高度数结点并改写程序，将该结点写入帧栈 */
 ```
 
 ##  总结
